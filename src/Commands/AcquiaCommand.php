@@ -298,4 +298,22 @@ abstract class AcquiaCommand extends Tasks {
     $this->waitForTask($response);
   }
 
+  /**
+   * Get a list of domains for a given environment id.
+   *
+   * @param string $envUuid
+   *  The Environment ID to query.
+   *
+   * @return array
+   *  An array of domains.
+   */
+  protected function getDomains($envUuid) {
+    $domainList = [];
+    $domains = new Domains($this->client);
+    foreach ($domains->getAll($envUuid) as $domain) {
+      $domainList[] = $domain->hostname;
+    }
+    return $domainList;
+  }
+
 }
