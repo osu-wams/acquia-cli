@@ -76,16 +76,16 @@ class DeployCommand extends AcquiaCommand {
         case 'prod':
           $prodUrls = [
             $siteUrl,
-            substr_replace('.oregonstate.edu', '.prod.acquia.cws.oregonstate.edu', $siteUrl),
+            str_replace('.oregonstate.edu', '.prod.acquia.cws.oregonstate.edu', $siteUrl),
           ];
           $this->flushVarnish($envUuidTo, $prodUrls);
           break;
         case 'test':
-          $siteUrl = substr_replace('.oregonstate.edu', '.stage.acquia.cws.oregonstate.edu', $siteUrl);
+          $siteUrl = str_replace('.oregonstate.edu', '.stage.acquia.cws.oregonstate.edu', $siteUrl);
           $this->flushVarnish($envUuidTo, [$siteUrl]);
           break;
         case 'dev':
-          $siteUrl = substr_replace('.oregonstate.edu', '.dev.acquia.cws.oregonstate.edu', $siteUrl);
+          $siteUrl = str_replace('.oregonstate.edu', '.dev.acquia.cws.oregonstate.edu', $siteUrl);
           $this->flushVarnish($envUuidTo, [$siteUrl]);
           break;
         default:
