@@ -29,7 +29,7 @@ $classLoader = require $autoloaderPath;
 // Customization variables
 $input = new ArgvInput($argv);
 $output = new ConsoleOutput();
-$appVersion = trim(file_get_contents(__DIR__ . '/VERSION'));
+$appVersion = trim(file_get_contents(dirname(__DIR__) . '/VERSION'));
 $config = Robo::createConfiguration(['acquia-cli.yml']);
 $app = new AcquiaCli($config, $input, $output);
 $statusCode = $app->run($input, $output);
