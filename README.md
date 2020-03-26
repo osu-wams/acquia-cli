@@ -5,9 +5,9 @@ We wrote this one with out needs in mind. There are lots of similarities to the 
 in code and language.
 
 ## Get Started
-You will need to create your V2 Acquia Cloud API and Secret.
+You will need to create your V2 Acquia Cloud API and Secret. Documentation about setup can be found on [Acquia Cloud API](https://docs.acquia.com/acquia-cloud/develop/api/auth/)
 
-* Copy acquia-cli.dis.yml to acquia-cli.yml and update the keys and secret.
+* Copy acquia-cli.dist.yml to acquia-cli.yml and update the keys and secret.
 * Run `composer install -o --no-dev` to get all dependencies.
 ## Running
 Execute the cli via `./bin/acquiacli` and it will print a list of commands to the screen.
