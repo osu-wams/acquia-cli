@@ -28,10 +28,32 @@ class DomainCommand extends AcquiaCommand {
     $domains = $this->getDomains($envUuid);
     $domainHelper = new ChoiceQuestion("Which Domains do you want to flush? Separate multiple by comma", $domains);
     $domainHelper->setMultiselect(TRUE);
+    /** @var array $domain */
     $domain = $this->doAsk($domainHelper);
     $this->output()
       ->writeln('Flushing Domains ' . implode(',', $domain));
     $this->flushVarnish($envUuid, $domain);
+  }
+
+
+  /**
+   * Create a new Domain in the given environment.
+   *
+   * @param string $appName
+   *  The Acquia Cloud Application Name.
+   * @param string $envName
+   *  The environment you wish to create the domain in.
+   * @param string $domainName
+   *  The domain name to create
+   *
+   * @command domain:create
+   * @usage domain:create prod:AppName dev example.com
+   * @throws \Exception
+   */
+  public function newDomain(string $appName, string $envName, string $domainName) {
+    $appUuId = $this->getUuidFromName($appName);
+    $envUuId = $this->getEnvUuIdFromApp($appUuId, $envName);
+    $this->createDomain($envUuId, $domainName);
   }
 
 }

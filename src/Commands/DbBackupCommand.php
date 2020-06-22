@@ -4,22 +4,22 @@
 namespace OsuWams\Commands;
 
 
+use AcquiaCloudApi\Endpoints\DatabaseBackups;
 use DateTime;
 use DateTimeZone;
 use Exception;
-use OsuWams\OsuDatabaseBackups;
 use Symfony\Component\Console\Helper\Table;
 
 class DbBackupCommand extends AcquiaCommand {
 
   /**
-   * @var \OsuWams\OsuDatabaseBackups
+   * @var \AcquiaCloudApi\Endpoints\DatabaseBackups
    */
-  protected $osuDatabaseBackupAdapter;
+  protected $databaseBackupAdapter;
 
   public function __construct() {
     parent::__construct();
-    $this->osuDatabaseBackupAdapter = new OsuDatabaseBackups($this->client);
+    $this->databaseBackupAdapter = new DatabaseBackups($this->client);
   }
 
   /**
@@ -53,7 +53,7 @@ class DbBackupCommand extends AcquiaCommand {
   public function deleteBackupDb($appName, $env, $dbName, $backupId) {
     $appUuId = $this->getUuidFromName($appName);
     $envUuId = $this->getEnvUuIdFromApp($appUuId, $env);
-    $this->osuDatabaseBackupAdapter->delete($envUuId, $dbName, $backupId);
+    $this->databaseBackupAdapter->delete($envUuId, $dbName, $backupId);
   }
 
   /**
@@ -72,7 +72,7 @@ class DbBackupCommand extends AcquiaCommand {
   public function listBackupDbs($appName, $env, $dbName) {
     $appUuId = $this->getUuidFromName($appName);
     $envUuId = $this->getEnvUuIdFromApp($appUuId, $env);
-    $backups = $this->osuDatabaseBackupAdapter->getAll($envUuId, $dbName);
+    $backups = $this->databaseBackupAdapter->getAll($envUuId, $dbName);
     $output = $this->output();
     $table = new Table($output);
     $table->setHeaderTitle("Backups for $dbName");
@@ -115,7 +115,7 @@ class DbBackupCommand extends AcquiaCommand {
     }
     catch (Exception $e) {
     }
-    $backups = $this->osuDatabaseBackupAdapter->getAll($envUuId, $dbName);
+    $backups = $this->databaseBackupAdapter->getAll($envUuId, $dbName);
 
     foreach ($backups as $backup) {
       if ($backup->type === 'ondemand') {

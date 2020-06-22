@@ -6,6 +6,7 @@ namespace OsuWams\Commands;
 use AcquiaCloudApi\Connector\Client;
 use AcquiaCloudApi\Connector\Connector;
 use AcquiaCloudApi\Endpoints\Applications;
+use AcquiaCloudApi\Endpoints\DatabaseBackups;
 use AcquiaCloudApi\Endpoints\Databases;
 use AcquiaCloudApi\Endpoints\Domains;
 use AcquiaCloudApi\Endpoints\Environments;
@@ -14,7 +15,6 @@ use AcquiaCloudApi\Response\OperationResponse;
 use DateTime;
 use DateTimeZone;
 use Exception;
-use OsuWams\OsuDatabaseBackups;
 use Robo\Robo;
 use Robo\Tasks;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -62,6 +62,7 @@ abstract class AcquiaCommand extends Tasks {
    * @param string $env
    *
    * @return string
+   *  The Environment UUID for the Provided Name.
    * @throws \Exception
    */
   protected function getEnvUuIdFromApp($appUuId, $env) {
@@ -80,6 +81,8 @@ abstract class AcquiaCommand extends Tasks {
    * @param string $appName
    *  The Acquia Cloud Application name.
    *
+   * @return string
+   *  Return the UUID of the provided application.
    * @throws \Exception
    */
   protected function getUuidFromName($appName) {
@@ -153,7 +156,7 @@ abstract class AcquiaCommand extends Tasks {
    * @throws \Exception
    */
   protected function deleteDbBackup($envUuid, $dbName, $backupUuid) {
-    $db = new OsuDatabaseBackups($this->client);
+    $db = new DatabaseBackups($this->client);
     $response = $db->delete($envUuid, $dbName, $backupUuid);
     $this->waitForTask($response);
   }
@@ -245,7 +248,7 @@ abstract class AcquiaCommand extends Tasks {
    * @throws \Exception
    */
   protected function createDbBackup($dbname, $envUuid) {
-    $db = new OsuDatabaseBackups($this->client);
+    $db = new DatabaseBackups($this->client);
     $response = $db->create($envUuid, $dbname);
     $this->waitForTask($response);
   }
@@ -314,6 +317,36 @@ abstract class AcquiaCommand extends Tasks {
       $domainList[] = $domain->hostname;
     }
     return $domainList;
+  }
+
+  /**
+   * Create a new Database.
+   *
+   * @param string $appUuId
+   *  The Acquia Cloud Application UUID.
+   * @param string $dbName
+   *  The Database name to create.
+   *
+   * @return OperationResponse
+   */
+  protected function createDatabase($appUuId, $dbName) {
+    $database = new Databases($this->client);
+    return $database->create($appUuId, $dbName);
+  }
+
+  /**
+   * Create a new Domain in the given Environment.
+   *
+   * @param string $envUuId
+   *  The Acquia Cloud Environment UUID.
+   * @param string $domainName
+   *  The domain name to create.
+   *
+   * @return OperationResponse
+   */
+  protected function createDomain(string $envUuId, string $domainName) {
+    $domain = new Domains($this->client);
+    return $domain->create($envUuId, $domainName);
   }
 
 }

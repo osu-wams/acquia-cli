@@ -54,6 +54,7 @@ class DbCommand extends AcquiaCommand {
    * @param $toEnv
    *
    * @command db:deployto
+   *
    * @throws \Exception
    */
   public function deployDbTo($appName, $dbName, $fromEnv, $toEnv) {
@@ -61,6 +62,24 @@ class DbCommand extends AcquiaCommand {
     $envUuIdFrom = $this->getEnvUuIdFromApp($appUuId, $fromEnv);
     $envUuIdTo = $this->getEnvUuIdFromApp($appUuId, $toEnv);
     $this->copyDb($dbName, $envUuIdFrom, $envUuIdTo);
+  }
+
+  /**
+   * Create a new Database.
+   *
+   * @param string $appName
+   *  The Acquia Cloud Application Name.
+   * @param string $dbName
+   *  The name of the new Database you want to create.
+   *
+   * @command db:create
+   *
+   * @throws \Exception
+   */
+  public function createDb($appName, $dbName) {
+    $appUuId = $this->getUuidFromName($appName);
+    $dbName = str_replace('.', '_', strtolower($dbName));
+    $this->createDatabase($appUuId, $dbName);
   }
 
 }
