@@ -63,5 +63,26 @@ class CopyFilesCommand extends AcquiaCommand {
     $this->say('Deleting temporary file copy.');
     $this->_deleteDir("/tmp/${site}");
   }
+  /**
+   * @command files:copy:down
+   */
+  public function copySiteFilesDown($appName, $site, $fromEnv) {
+    $appUuId = $this->getUuidFromName($appName);
+    $envUuIdFrom = $this->getEnvUuIdFromApp($appUuId, $fromEnv);
+    $env = new Environments($this->client);
+    $fromUrl = $env->get($envUuIdFrom)->sshUrl;
+    $from = explode('@', $fromUrl);
+    $rsyncDown = $this->taskRsync()
+      ->fromHost($fromUrl)
+      ->fromPath("/mnt/gfs/${from[0]}/sites/${site}/")
+      ->toPath("/tmp/${site}/")
+      ->archive()
+      ->compress()
+      ->excludeVcs()
+      ->progress();
+    if ('y' === $this->ask("Do you want to copy ${site} files down? (y/n)")) {
+      $rsyncDown->run();
+    }
+  }
 
 }
