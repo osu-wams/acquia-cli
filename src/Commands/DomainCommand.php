@@ -4,6 +4,8 @@
 namespace OsuWams\Commands;
 
 
+use Consolidation\OutputFormatters\StructuredData\UnstructuredListData;
+use Exception;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 
 class DomainCommand extends AcquiaCommand {
@@ -54,6 +56,37 @@ class DomainCommand extends AcquiaCommand {
     $appUuId = $this->getUuidFromName($appName);
     $envUuId = $this->getEnvUuIdFromApp($appUuId, $envName);
     $this->createDomain($envUuId, $domainName);
+  }
+
+  /**
+   * @command domain:list
+   * @throws \Exception
+   */
+  public function listDomains() {
+    $this->say('Getting Applications...');
+    $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to operate on', $this->getApplicationsId());
+    $appName = $this->doAsk($appHelper);
+    // Attempt to get the UUID of this application.
+    try {
+      $appUuId = $this->getUuidFromName($appName);
+    }
+    catch (Exception $e) {
+      $this->say('Incorrect Application ID.');
+    }
+    // Get a list of environments for this App UUID.
+    $this->writeln('Getting Environment ID\'s...');
+    $envList = $this->getEnvironments($appUuId);
+    // Get the From Env for this deploy.
+    $envHelper = new ChoiceQuestion('Which Environment do you want to see the domain list for...', $envList);
+    $environment = $this->doAsk($envHelper);
+    try {
+      $envUuId = $this->getEnvUuIdFromApp($appUuId, $environment);
+    } catch (Exception $e) {
+      $this->say('Incorect Environment and Application id.');
+    }
+    $domainList = $this->getDomains($envUuId);
+    $domains = new UnstructuredListData($domainList);
+    $this->writeln($domains);
   }
 
 }

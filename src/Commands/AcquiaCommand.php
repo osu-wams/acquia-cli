@@ -36,7 +36,7 @@ abstract class AcquiaCommand extends Tasks {
 
   const TIMEOUT = 300;
 
-  CONST SLEEP = 5;
+  const SLEEP = 5;
 
   /**
    * @var \AcquiaCloudApi\Connector\Client
@@ -110,6 +110,16 @@ abstract class AcquiaCommand extends Tasks {
       $appList[] = $app->hosting->id;
     }
     return $appList;
+  }
+
+  /**
+   * Get all applications the user has access to.
+   *
+   * @return \AcquiaCloudApi\Response\ApplicationsResponse
+   */
+  protected function getAllApplications() {
+    $applications = new Applications($this->client);
+    return $applications->getAll();
   }
 
   /**
@@ -231,7 +241,7 @@ abstract class AcquiaCommand extends Tasks {
    *
    * @throws \Exception
    */
-  protected function copyDb($dbname, $fromEnv, $toEnv) {
+  protected function copyDb(string $dbname, string $fromEnv, string $toEnv) {
     $dbAdapter = new Databases($this->client);
     $response = $dbAdapter->copy($fromEnv, $dbname, $toEnv);
     $this->waitForTask($response);
@@ -247,7 +257,7 @@ abstract class AcquiaCommand extends Tasks {
    *
    * @throws \Exception
    */
-  protected function createDbBackup($dbname, $envUuid) {
+  protected function createDbBackup(string $dbname, string $envUuid) {
     $db = new DatabaseBackups($this->client);
     $response = $db->create($envUuid, $dbname);
     $this->waitForTask($response);
@@ -261,7 +271,7 @@ abstract class AcquiaCommand extends Tasks {
    * @param string $envUuIdFrom
    * @param string $envUuIdTo
    */
-  protected function rsyncFiles($appUuId, $siteName, $envUuIdFrom, $envUuIdTo) {
+  protected function rsyncFiles(string $appUuId, string $siteName, string $envUuIdFrom, string $envUuIdTo) {
     $environments = new Environments($this->client);
     $fromUrl = $environments->get($envUuIdFrom)->sshUrl;
     $toUrl = $environments->get($envUuIdTo)->sshUrl;
@@ -295,7 +305,7 @@ abstract class AcquiaCommand extends Tasks {
    *
    * @throws \Exception
    */
-  protected function flushVarnish($envUuid, array $domainList) {
+  protected function flushVarnish(string $envUuid, array $domainList) {
     $domains = new Domains($this->client);
     $response = $domains->purge($envUuid, $domainList);
     $this->waitForTask($response);
@@ -310,7 +320,7 @@ abstract class AcquiaCommand extends Tasks {
    * @return array
    *  An array of domains.
    */
-  protected function getDomains($envUuid) {
+  protected function getDomains(string $envUuid) {
     $domainList = [];
     $domains = new Domains($this->client);
     foreach ($domains->getAll($envUuid) as $domain) {
@@ -329,9 +339,24 @@ abstract class AcquiaCommand extends Tasks {
    *
    * @return OperationResponse
    */
-  protected function createDatabase($appUuId, $dbName) {
+  protected function createDatabase(string $appUuId, string $dbName) {
     $database = new Databases($this->client);
     return $database->create($appUuId, $dbName);
+  }
+
+  /**
+   * Delete a database.
+   *
+   * @param string $appUuId
+   *  The Acquia Cloud Application UUID.
+   * @param string $dbName
+   *  The Database name to delete.
+   *
+   * @return \AcquiaCloudApi\Response\OperationResponse
+   */
+  protected function deleteDatabase(string $appUuId, string $dbName) {
+    $database = new Databases($this->client);
+    return $database->delete($appUuId, $dbName);
   }
 
   /**
@@ -347,6 +372,21 @@ abstract class AcquiaCommand extends Tasks {
   protected function createDomain(string $envUuId, string $domainName) {
     $domain = new Domains($this->client);
     return $domain->create($envUuId, $domainName);
+  }
+
+  /**
+   * Delete a Domain in the given Environment.
+   *
+   * @param string $envUuId
+   *  The Acquia Cloud Environment UUID.
+   * @param string $domainName
+   *  The Domain to delete.
+   *
+   * @return OperationResponse
+   */
+  protected function deleteDomain(string $envUuId, string $domainName) {
+    $domain = new Domains($this->client);
+    return $domain->delete($envUuId, $domainName);
   }
 
 }
