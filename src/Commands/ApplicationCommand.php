@@ -31,7 +31,7 @@ class ApplicationCommand extends AcquiaCommand {
    */
   public function listApplications() {
     // Generate a request object using the access token.
-    $apps = $this->applicationAdapter->getAll();
+    $apps = $this->getAllApplications();
 
     $output = $this->output();
     $table = new Table($output);
