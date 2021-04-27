@@ -26,6 +26,7 @@ class DeployCommand extends AcquiaCommand {
    */
   public function deploySite() {
     // Ask for which application to deploy in.
+    $this->writeln('Getting Applications...');
     $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to deploy a site on', $this->getApplicationsId());
     $appName = $this->doAsk($appHelper);
     // Attempt to get the UUID of this application.
@@ -36,6 +37,7 @@ class DeployCommand extends AcquiaCommand {
       $this->say('Incorrect Application ID.');
     }
     // Get a list of environments for this App UUID.
+    $this->writeln('Getting Environment ID\'s...');
     $envList = $this->getEnvironments($appUuId);
     // Get the From Env for this deploy.
     $fromEnvHelper = new ChoiceQuestion('Select which Environment to deploy from', $envList);
