@@ -389,4 +389,19 @@ abstract class AcquiaCommand extends Tasks {
     return $domain->delete($envUuId, $domainName);
   }
 
+  /**
+   * Perform a application file copy command.
+   *
+   * @param string $envUuIdFrom
+   *  The Acquia Cloud UUID Source.
+   * @param string $envUuIdTo
+   *  The Acquia Cloud UUID Target.
+   *
+   * @return OperationResponse
+   */
+  protected function copyFiles(string $envUuIdFrom, string $envUuIdTo) {
+    $fileService = new Environments($this->client);
+    return $fileService->copyFiles($envUuIdFrom, $envUuIdTo);
+  }
+
 }
