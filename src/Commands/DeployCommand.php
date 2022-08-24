@@ -112,6 +112,11 @@ class DeployCommand extends AcquiaCommand {
     $siteHelper = new ChoiceQuestion('Select which Site to deploy.', $siteDbList);
     $siteDb = $this->doAsk($siteHelper);
     $siteUrl = str_replace('_', '.', $siteDb);
+    $verifySiteUrl = $this->ask("Is this the correct domain ${siteUrl}");
+    if ($verifySiteUrl === "n") {
+      $updateSiteUrl = $this->ask("What is the correct domain of the site?");
+      $siteUrl = $updateSiteUrl;
+    }
     try {
       $envUuidFrom = $this->getEnvUuIdFromApp($appUuId, $fromEnv);
     }
@@ -136,24 +141,17 @@ class DeployCommand extends AcquiaCommand {
       $this->say("Coping files from ${fromEnv} to ${toEnv}.");
       $this->rsyncFiles($appUuId, $siteUrl, $envUuidFrom, $envUuidTo);
       // Flush varnish.
-      switch ($toEnv) {
-        case 'prod':
-          $prodUrls = [
-            $siteUrl,
-            str_replace('.oregonstate.edu', '.prod.acquia.cws.oregonstate.edu', $siteUrl),
-          ];
-          $this->flushVarnish($envUuidTo, $prodUrls);
-          break;
-        case 'test':
-          $siteUrl = str_replace('.oregonstate.edu', '.stage.acquia.cws.oregonstate.edu', $siteUrl);
-          $this->flushVarnish($envUuidTo, [$siteUrl]);
-          break;
-        case 'dev':
-          $siteUrl = str_replace('.oregonstate.edu', '.dev.acquia.cws.oregonstate.edu', $siteUrl);
-          $this->flushVarnish($envUuidTo, [$siteUrl]);
-          break;
-        default:
-          return;
+      $checkToFlushVarnish = $this->ask("Flush varnish?");
+      if ($checkToFlushVarnish === 'y') {
+        $this->say('Getting Domains...');
+        $domains = $this->getDomains($envUuidTo);
+        $domainHelper = new ChoiceQuestion("Which Domains do you want to flush? Separate multiple by comma", $domains);
+        $domainHelper->setMultiselect(TRUE);
+        /** @var array $domain */
+        $domain = $this->doAsk($domainHelper);
+        $this->output()
+          ->writeln('Flushing Domains ' . implode(',', $domain));
+        $this->flushVarnish($envUuidTo, $domain);
       }
     }
     else {
