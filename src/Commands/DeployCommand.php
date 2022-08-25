@@ -20,7 +20,7 @@ class DeployCommand extends AcquiaCommand {
   }
 
   /**
-   * Deploy a site from one environment to an other.
+   * Deploy a site from one environment to another.
    *
    * @command deploy:site
    */
@@ -157,6 +157,33 @@ class DeployCommand extends AcquiaCommand {
     else {
       exit();
     }
+  }
+
+  /**
+   * Deploy a site from one env to another without the wizard
+   *
+   * @param string $appName
+   *   The Application name in acquia cloud.
+   * @param string $envFrom
+   *   The environment which to deploy from.
+   * @param string $envTo
+   *   The environment which to deploy to.
+   * @param string $siteName
+   *   The FQDN of the site to operate against.
+   *
+   * @command deploy:unattended
+   */
+  public function deploySiteUnattended($appName, $envFrom, $envTo, $siteName) {
+    $appUuId = $this->getUuidFromName($appName);
+    $envToUuId = $this->getEnvUuIdFromApp($appUuId, $envTo);
+    $envFromUuId = $this->getEnvUuIdFromApp($appUuId, $envFrom);
+    $dbName = preg_replace('/[\W]+/', '_', strtolower($siteName));
+    $this->say('Creating Database backup in Destination environment...');
+    $this->createDbBackup($dbName, $envToUuId);
+    $this->say("Executing Database copy from ${envFrom} to ${envTo}...");
+    $this->copyDb($dbName, $envFromUuId, $envToUuId);
+    $this->say("Executing rsync on files...");
+    $this->rsyncFiles($appUuId, $siteName, $envFromUuId, $envToUuId);
   }
 
 }

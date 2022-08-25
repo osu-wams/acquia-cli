@@ -5,10 +5,12 @@ namespace OsuWams\Commands;
 
 
 use AcquiaCloudApi\Endpoints\DatabaseBackups;
+use Consolidation\OutputFormatters\FormatterManager;
+use Consolidation\OutputFormatters\Options\FormatterOptions;
+use Consolidation\OutputFormatters\StructuredData\RowsOfFields;
 use DateTime;
 use DateTimeZone;
 use Exception;
-use Symfony\Component\Console\Helper\Table;
 
 class DbBackupCommand extends AcquiaCommand {
 
@@ -69,30 +71,35 @@ class DbBackupCommand extends AcquiaCommand {
    * @throws \Exception
    * @command db:backup:list
    */
-  public function listBackupDbs($appName, $env, $dbName) {
+  public function listBackupDbs($appName, $env, $dbName, $options = [
+    'format' => 'table',
+    'fields' => '',
+  ]) {
     $appUuId = $this->getUuidFromName($appName);
     $envUuId = $this->getEnvUuIdFromApp($appUuId, $env);
     $backups = $this->databaseBackupAdapter->getAll($envUuId, $dbName);
-    $output = $this->output();
-    $table = new Table($output);
-    $table->setHeaderTitle("Backups for $dbName");
-    $table->setHeaders([
-      'id',
-      'Date',
-      'Type',
-    ]);
+    $rows = [];
+    /** @var \AcquiaCloudApi\Response\BackupResponse $backup */
     foreach ($backups as $backup) {
       $completedAt = new DateTime($backup->completedAt);
       $completedAt->setTimezone(new DateTimeZone('America/Los_Angeles'));
-      $table->addRows([
-        [
-          $backup->id,
-          $completedAt->format('Y-m-d H:m:s a T'),
-          $backup->type,
-        ],
-      ]);
+      $rows[] = [
+        'id' => $backup->id,
+        'completedat' => $completedAt->format('Y-m-d H:m:s a T'),
+        'type' => $backup->type,
+      ];
     }
-    $table->render();
+    $opts = new FormatterOptions([], $options);
+    $opts->setInput($this->input);
+    $opts->setFieldLabels([
+      'id' => 'Backup ID',
+      'completedat' => 'Completed At',
+      'type' => 'Backup Type',
+    ]);
+    $opts->setDefaultStringField('id');
+
+    $formatterManager = new FormatterManager();
+    $formatterManager->write($this->output, $opts->getFormat(), new RowsOfFields($rows), $opts);
   }
 
   /**
@@ -124,6 +131,25 @@ class DbBackupCommand extends AcquiaCommand {
         $this->deleteDbBackup($envUuId, $dbName, $backupId);
       }
     }
+  }
+
+  /**
+   * @command db:backup:download-latest
+   */
+  public function downloadLatestBackups($appName, $env, $dbName) {
+    $appUuId = $this->getUuidFromName($appName);
+    $envUuId = $this->getEnvUuIdFromApp($appUuId, $env);
+    $allBackups = $this->databaseBackupAdapter->getAll($envUuId, $dbName);
+    // Filter our backups to only include daily backups.
+    $dailyBackups = array_filter($allBackups->getArrayCopy(), function ($backup) {
+      return $backup->type === "daily";
+    });
+    // Sort the backup date/time to ensure we have the latest at position 1.
+    usort($dailyBackups, function ($a, $b) {
+      return $a->completedAt < $b->completedAt;
+    });
+    $backupId = $dailyBackups[0]->id;
+    file_put_contents($dbName . '.sql.gz', $this->databaseBackupAdapter->download($envUuId, $dbName, $backupId));
   }
 
 }

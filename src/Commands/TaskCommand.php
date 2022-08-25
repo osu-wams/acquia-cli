@@ -5,6 +5,9 @@ namespace OsuWams\Commands;
 
 
 use AcquiaCloudApi\Endpoints\Notifications;
+use Consolidation\OutputFormatters\FormatterManager;
+use Consolidation\OutputFormatters\Options\FormatterOptions;
+use Consolidation\OutputFormatters\StructuredData\RowsOfFields;
 use DateTime;
 use DateTimeZone;
 use Symfony\Component\Console\Helper\Table;
@@ -44,31 +47,38 @@ class TaskCommand extends AcquiaCommand {
    * @command task:list
    * @throws \Exception
    */
-  public function taskLists($appName) {
+  public function taskLists($appName, $options = [
+    'format' => 'table',
+    'fields' => '',
+  ]) {
     $appUuId = $this->getUuidFromName($appName);
     $taskList = $this->notificationAdapter->getAll($appUuId);
 
-    $output = $this->output();
-    $table = new Table($output);
-    $table->setHeaders([
-      'UUID',
-      'Label',
-      'Status',
-      'Completed',
-    ]);
+    $rows = [];
+    /** @var \AcquiaCloudApi\Response\NotificationResponse $task */
     foreach ($taskList as $task) {
       $completedAt = new DateTime($task->completed_at);
       $completedAt->setTimezone(new DateTimeZone('America/Los_Angeles'));
-      $table->addRows([
-        [
-          $task->uuid,
-          $task->label,
-          $task->status,
-          $completedAt->format('Y-m-d H:m:s a T'),
-        ],
-      ]);
+      $rows[] = [
+        'uuid' => $task->uuid,
+        'label' => $task->label,
+        'status' => $task->status,
+        'completed' => $completedAt->format('Y-m-d H:m:s a T'),
+      ];
     }
-    $table->render();
+
+    $opts = new FormatterOptions([], $options);
+    $opts->setInput($this->input);
+    $opts->setFieldLabels([
+      'uuid' => 'Task UUID',
+      'label' => 'Label',
+      'status' => 'Status',
+      'completed' => 'Completed',
+    ]);
+    $opts->setDefaultStringField('uuid');
+
+    $formatterManager = new FormatterManager();
+    $formatterManager->write($this->output, $opts->getFormat(), new RowsOfFields($rows), $opts);
   }
 
 }

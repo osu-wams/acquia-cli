@@ -5,9 +5,10 @@ namespace OsuWams\Commands;
 
 
 use AcquiaCloudApi\Endpoints\Databases;
+use Consolidation\OutputFormatters\FormatterManager;
+use Consolidation\OutputFormatters\Options\FormatterOptions;
+use Consolidation\OutputFormatters\StructuredData\RowsOfFields;
 use Exception;
-use Symfony\Component\Console\Helper\QuestionHelper;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 
@@ -29,9 +30,12 @@ class DbCommand extends AcquiaCommand {
    * @param string $appName
    *  The Acquia CLoud Application Name.
    *
-   * @command cloud:dbs
+   * @command db:list
    */
-  public function listDatabases($appName) {
+  public function listDatabases($appName, $options = [
+    'format' => 'table',
+    'fields' => '',
+  ]) {
     try {
       $appUuId = $this->getUuidFromName($appName);
     }
@@ -39,13 +43,18 @@ class DbCommand extends AcquiaCommand {
       $this->say('Incorrect Application Name.');
     }
     $envDbs = $this->dbAdapter->getAll($appUuId);
-    $output = $this->output();
-    $table = new Table($output);
-    $table->setHeaders(['Name']);
+
+    $rows = [];
+    /** @var \AcquiaCloudApi\Response\DatabaseResponse $db */
     foreach ($envDbs as $db) {
-      $table->addRow([$db->name]);
+      $rows[] = ['name' => $db->name];
     }
-    $table->render();
+    $opts = new FormatterOptions([], $options);
+    $opts->setInput($this->input);
+    $opts->setFieldLabels(['name' => 'Database Name']);
+    $opts->setDefaultStringField('name');
+    $formatterManager = new FormatterManager();
+    $formatterManager->write($this->output, $opts->getFormat(), new RowsOfFields($rows), $opts);
   }
 
   /**

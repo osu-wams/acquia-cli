@@ -5,7 +5,9 @@ namespace OsuWams\Commands;
 
 
 use AcquiaCloudApi\Endpoints\Applications;
-use Symfony\Component\Console\Helper\Table;
+use Consolidation\OutputFormatters\FormatterManager;
+use Consolidation\OutputFormatters\Options\FormatterOptions;
+use Consolidation\OutputFormatters\StructuredData\RowsOfFields;
 
 /**
  * Class ApplicationCommand
@@ -29,26 +31,33 @@ class ApplicationCommand extends AcquiaCommand {
    *
    * @command cloud:apps
    */
-  public function listApplications() {
+  public function listApplications($options = [
+    'format' => 'table',
+    'fields' => '',
+  ]) {
     // Generate a request object using the access token.
     $apps = $this->getAllApplications();
+    $rows = [];
 
-    $output = $this->output();
-    $table = new Table($output);
-    $table->setHeaders(['UUID', 'Name', 'ID']);
+    /** @var \AcquiaCloudApi\Response\ApplicationResponse $app */
     foreach ($apps as $app) {
       $uuid = $app->uuid;
       $name = $app->name;
       $id = $app->hosting->id;
-      $table->addRows([
-        [
-          $uuid,
-          $name,
-          $id,
-        ],
-      ]);
+      $rows[] = ['uuid' => $uuid, 'name' => $name, 'id' => $id];
     }
-    $table->render();
+
+    $opts = new FormatterOptions([], $options);
+    $opts->setInput($this->input);
+    $opts->setFieldLabels([
+      'uuid' => 'UUID',
+      'name' => 'Application Name',
+      'id' => 'Application ID',
+    ]);
+    $opts->setDefaultStringField('uuid');
+
+    $formatterManager = new FormatterManager();
+    $formatterManager->write($this->output, $opts->getFormat(), new RowsOfFields($rows), $opts);
   }
 
 }

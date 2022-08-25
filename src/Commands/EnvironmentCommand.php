@@ -5,8 +5,10 @@ namespace OsuWams\Commands;
 
 
 use AcquiaCloudApi\Endpoints\Environments;
+use Consolidation\OutputFormatters\FormatterManager;
+use Consolidation\OutputFormatters\Options\FormatterOptions;
+use Consolidation\OutputFormatters\StructuredData\RowsOfFields;
 use Exception;
-use Symfony\Component\Console\Helper\Table;
 
 class EnvironmentCommand extends AcquiaCommand {
 
@@ -23,28 +25,40 @@ class EnvironmentCommand extends AcquiaCommand {
    *
    * @command cloud:envs
    */
-  public function listEnvironments($appName) {
+  public function listEnvironments($appName, $options = [
+    'format' => 'table',
+    'fields' => '',
+  ]) {
     try {
       $appUuId = $this->getUuidFromName($appName);
     }
     catch (Exception $e) {
       $this->say('Incorrect Application Name.');
     }
-    $output = $this->output();
-    $table = new Table($output);
-    $table->setHeaders(['UUID', 'Name', 'Label', 'Domains']);
+
+    $rows = [];
     $environments = $this->environmentAdapter->getAll($appUuId);
+    /** @var \AcquiaCloudApi\Response\EnvironmentResponse $environment */
     foreach ($environments as $environment) {
-      $table->addRows([
-        [
-          $environment->uuid,
-          $environment->name,
-          $environment->label,
-          implode("\n", $environment->domains),
-        ],
-      ]);
+      $rows[] = [
+        'uuid' => $environment->uuid,
+        'name' => $environment->name,
+        'label' => $environment->label,
+        'domains' => implode("\n", $environment->domains),
+      ];
     }
-    $table->render();
+    $opts = new FormatterOptions([], $options);
+    $opts->setInput($this->input);
+    $opts->setFieldLabels([
+      'uuid' => 'Environment UUID',
+      'name' => 'Environment Name',
+      'label' => 'Label',
+      'domains' => 'Domains',
+    ]);
+    $opts->setDefaultStringField('uuid');
+
+    $formatterManager = new FormatterManager();
+    $formatterManager->write($this->output, $opts->getFormat(), new RowsOfFields($rows), $opts);
   }
 
 }
