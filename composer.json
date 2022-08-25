@@ -17,17 +17,17 @@
   },
   "bin": "bin/acquiacli",
   "require": {
-    "consolidation/robo": "^2.0",
+    "consolidation/robo": "^3.0",
     "league/oauth2-client": "^2.4",
     "ext-json": "*",
     "typhonius/acquia-php-sdk-v2": "^2.0",
-    "symfony/yaml": "^5.1",
-    "consolidation/output-formatters": "^4.1"
+    "consolidation/output-formatters": "^4.1",
+    "symfony/yaml": "^6.1"
   },
   "require-dev": {
-    "symfony/var-dumper": "^5.0",
+    "symfony/var-dumper": "^6.1",
     "phpunit/phpunit": "^9.0",
-    "phpstan/phpstan": "^0.12.14",
-    "phpstan/phpstan-phpunit": "^0.12.6"
+    "phpstan/phpstan": "^1.8",
+    "phpstan/phpstan-phpunit": "^1.1"
   }
 }

@@ -39,7 +39,7 @@ class AcquiaCli {
     InputInterface $input = NULL,
     OutputInterface $output = NULL
   ) {
-    if ($file = file_get_contents(dirname(dirname(__DIR__)) . '/VERSION')) {
+    if ($file = file_get_contents(dirname(__DIR__, 2) . '/VERSION')) {
       $version = trim($file);
     }
     else {
@@ -48,7 +48,7 @@ class AcquiaCli {
     $this->setConfig($config);
     $application = new Application(self::APPLICATION_NAME, $version);
 
-    $container = Robo::createDefaultContainer($input, $output, $application, $config);
+    $container = Robo::createContainer($application, $config);
     $discovery = new CommandFileDiscovery();
     $discovery->setSearchPattern('*Command.php');
     $commandClasses = $discovery->discover(dirname(__DIR__) . '/Commands', '\OsuWams\Commands');
@@ -61,9 +61,7 @@ class AcquiaCli {
 
 
   public function run(InputInterface $input, OutputInterface $output) {
-    $statusCode = $this->runner->run($input, $output);
-
-    return $statusCode;
+    return $this->runner->run($input, $output);
   }
 
 

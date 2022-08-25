@@ -228,8 +228,7 @@ abstract class AcquiaCommand extends Tasks {
    */
   protected function getProgressBar() {
     $output = $this->output();
-    $progressBar = new ProgressBar($output);
-    return $progressBar;
+    return new ProgressBar($output);
   }
 
   /**

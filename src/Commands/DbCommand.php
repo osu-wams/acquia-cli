@@ -102,7 +102,6 @@ class DbCommand extends AcquiaCommand {
       $makeItSo = $this->confirm("Do want to create database: ${dbName}?");
       if ($makeItSo) {
         $this->createDatabase($appUuId, $dbName);
-        return;
       }
     }
     else {

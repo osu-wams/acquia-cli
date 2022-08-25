@@ -4,9 +4,7 @@ namespace OsuWams\Commands;
 
 use AcquiaCloudApi\Endpoints\DatabaseBackups;
 use AcquiaCloudApi\Endpoints\Databases;
-use Consolidation\OutputFormatters\FormatterManager;
-use Consolidation\OutputFormatters\Options\FormatterOptions;
-use Consolidation\OutputFormatters\StructuredData\RowsOfFields;
+use DateTime;
 
 class NightlyBackupsCommand extends AcquiaCommand {
 
@@ -33,28 +31,37 @@ class NightlyBackupsCommand extends AcquiaCommand {
    *   The Acquia Cloud Application name.
    * @param string $env
    *   The environment to operate against.
+   * @param string $dbBackupDir
+   *   The full path to the backup directory.
    *
+   * @throws \Exception
    * @command backup:nightly
    */
-  public function doNightlyBackup($appName, $env, $options = [
-    'format' => 'table',
-    'fields' => '',
-  ]) {
+  public function doNightlyBackup($appName, $env, $dbBackupDir = '/tmp') {
+    $backupDay = new DateTime('now');
+    $backupDay = $backupDay->format('Ymd');
+    $appShortName = explode(":", $appName)[1];
     $appUuId = $this->getUuidFromName($appName);
     $envUuId = $this->getEnvUuIdFromApp($appUuId, $env);
-    $dbList = $this->dbAdapter->getAll($appUuId);
-    $rows = [];
-    /** @var \AcquiaCloudApi\Response\DatabaseResponse $dbName */
-    foreach ($dbList as $dbName) {
-      $rows[] = ['name' => $dbName->name];
+    $databaseList = $this->dbAdapter->getAll($appUuId);
+    /** @var \AcquiaCloudApi\Response\DatabaseResponse $databaseResponse */
+    foreach ($databaseList as $databaseResponse) {
+      $databaseName = $databaseResponse->name;
+      $allBackups = $this->databaseBackupAdapter->getAll($envUuId, $databaseName);
+      $dailyBackups = array_filter($allBackups->getArrayCopy(), function ($backup) {
+        return $backup->type === "daily";
+      });
+      // Sort the backup date/time to ensure we have the latest at position 1.
+      usort($dailyBackups, function ($a, $b) {
+        return $a->completedAt < $b->completedAt;
+      });
+      // Get the latest backup id.
+      $backupId = $dailyBackups[0]->id;
+      $dbBackupPath = "${dbBackupDir}/daily/${backupDay}/${appShortName}/${env}/${databaseName}.sql.gz";
+      $this->say("Copying down back for ${databaseName} to ${dbBackupPath}");
+      file_put_contents($dbBackupPath, $this->databaseBackupAdapter->download($envUuId, $databaseName, $backupId));
     }
-    $opts = new FormatterOptions([], $options);
-    $opts->setInput($this->input);
-    $opts->setFieldLabels(['name' => 'Database Name']);
-    $opts->setDefaultStringField('name');
 
-    $formatterManager = new FormatterManager();
-    $formatterManager->write($this->output, $opts->getFormat(), new RowsOfFields($rows), $opts);
   }
 
 }
