@@ -1,0 +1,14 @@
+{
+  "directories": [
+    "src"
+  ],
+  "files": [
+    "bin/osu-acquia-cli.php",
+    "VERSION"
+  ],
+  "stub": true,
+  "output": "build/acquia-cli.phar",
+  "force-autodiscovery": true,
+  "check-requirements": false,
+  "exclude-composer-files": false
+}
