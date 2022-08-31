@@ -1,7 +1,7 @@
 # Acquia Cloud CLI
 This project integrates with Acquia cloud v2 API. There is another, more tested CLI tool out there 
 by [Typhonius](https://github.com/typhonius/acquia_cli). I would recommend using that package first.
-We wrote this one without needs in mind. There are lots of similarities to the other Acquia CLI package 
+We wrote this one with our needs in mind. There are lots of similarities to the other Acquia CLI package 
 in code and language.
 
 ## Get Started
