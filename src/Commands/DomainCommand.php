@@ -4,7 +4,9 @@
 namespace OsuWams\Commands;
 
 
-use Consolidation\OutputFormatters\StructuredData\UnstructuredListData;
+use Consolidation\OutputFormatters\FormatterManager;
+use Consolidation\OutputFormatters\Options\FormatterOptions;
+use Consolidation\OutputFormatters\StructuredData\RowsOfFields;
 use Exception;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 
@@ -59,10 +61,15 @@ class DomainCommand extends AcquiaCommand {
   }
 
   /**
+   * Retrieve a list of domains.
+   *
    * @command domain:list
    * @throws \Exception
    */
-  public function listDomains() {
+  public function listDomains($options = [
+    'format' => 'table',
+    'fields' => '',
+  ]) {
     $this->say('Getting Applications...');
     $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to operate on', $this->getApplicationsId());
     $appName = $this->doAsk($appHelper);
@@ -81,12 +88,70 @@ class DomainCommand extends AcquiaCommand {
     $environment = $this->doAsk($envHelper);
     try {
       $envUuId = $this->getEnvUuIdFromApp($appUuId, $environment);
-    } catch (Exception $e) {
+    }
+    catch (Exception $e) {
       $this->say('Incorect Environment and Application id.');
     }
     $domainList = $this->getDomains($envUuId);
-    $domains = new UnstructuredListData($domainList);
-    $this->writeln($domains);
+    $rows = [];
+    foreach ($domainList as $domain) {
+      $rows[] = ['domain_name' => $domain];
+    }
+    $opts = new FormatterOptions([], $options);
+    $opts->setInput($this->input);
+    $opts->setFieldLabels(['domain_name' => 'Domain Name']);
+    $opts->setDefaultStringField('domain_name');
+    $formatterManager = new FormatterManager();
+    $formatterManager->write($this->output, $opts->getFormat(), new RowsOfFields($rows), $opts);
+
+    //    $domains = new UnstructuredListData($domainList);
+    //    $this->writeln($domains);
+  }
+
+  /**
+   * Delete domains from the given environment.
+   *
+   * @command domain:delete
+   */
+  public function domainDelete() {
+    $this->say('Getting Applications...');
+    $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to operate on', $this->getApplicationsId());
+    $appName = $this->doAsk($appHelper);
+    try {
+      $appUuId = $this->getUuidFromName($appName);
+    }
+    catch (Exception $e) {
+      $this->say('Incorrect Application ID.');
+    }
+    $this->say('Getting Environment ID\'s...');
+    $envList = $this->getEnvironments($appUuId);
+    $envHelper = new ChoiceQuestion('Which Environment do you want to delete domains from...', $envList);
+    $environment = $this->doAsk($envHelper);
+    try {
+      $envUuId = $this->getEnvUuIdFromApp($appUuId, $environment);
+    }
+    catch (Exception $e) {
+      $this->say('Incorect Environment and Application id.');
+    }
+    $domainList = $this->getDomains($envUuId);
+    $domainDeleteHelper = new ChoiceQuestion('Which Domain(s) do you want to delete, separate multiple by comma', $domainList);
+    $domainDeleteHelper->setMultiselect(TRUE);
+    /** @var array $domainDeleteList */
+    $domainDeleteList = $this->doAsk($domainDeleteHelper);
+    if (!is_null($domainDeleteList)) {
+      if (count($domainDeleteList) > 1) {
+        $makeItSo = $this->confirm("Do you want to delete these domains: " . implode(",", $domainDeleteList) . "?");
+      }
+      else {
+        $makeItSo = $this->confirm("Do you want to delete this domain: " . $domainDeleteList[0] . "?");
+      }
+      if ($makeItSo) {
+        foreach ($domainDeleteList as $domainToDelete) {
+          $this->say("Deleting domain {$domainToDelete}");
+          $this->deleteDomain($envUuId, $domainToDelete);
+        }
+      }
+    }
   }
 
 }
