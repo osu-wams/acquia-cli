@@ -15,6 +15,14 @@
       "OsuWams\\": "src"
     }
   },
+  "scripts": {
+    "box-install": [
+      "curl -f -l https://github.com/box-project/box/releases/download/4.0.2/box.phar -o build/box.phar"
+    ],
+    "box-compile": [
+      "php build/box.phar compile"
+    ]
+  },
   "bin": "bin/acquiacli",
   "require": {
     "consolidation/robo": "^3.0",
