@@ -141,6 +141,18 @@ abstract class AcquiaCommand extends Tasks {
   }
 
   /**
+   * @param string $appUuId
+   *   The Acquia Cloud APP UUID.
+   *
+   * @return \AcquiaCloudApi\Response\EnvironmentResponse
+   *   The environment response.
+   */
+  protected function getEnvironment($appUuId) {
+    $environments = new Environments($this->client);
+    return $environments->get($appUuId);
+  }
+
+  /**
    * Get a list of databases for this App.
    *
    * @param string $appUuId

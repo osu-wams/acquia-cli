@@ -61,4 +61,29 @@ class EnvironmentCommand extends AcquiaCommand {
     $formatterManager->write($this->output, $opts->getFormat(), new RowsOfFields($rows), $opts);
   }
 
+  /**
+   * Get the SSH URL from the provided environment.
+   *
+   * @param string $appName
+   *   The Acquia CLoud Application Name.
+   * @param string $env
+   *   The Acquia Cloud Environment.
+   *
+   * @command cloud:ssh:url
+   */
+  public function getSshUrl($appName, $env, $options = [
+    'format' => 'string',
+    'fields' => '',
+  ]) {
+    $appUuId = $this->getUuidFromName($appName);
+    $envUuId = $this->getEnvUuIdFromApp($appUuId, $env);
+    $environmentInfo = $this->getEnvironment($envUuId);
+    $envSshUrl = $environmentInfo->sshUrl;
+
+    $opts = new FormatterOptions([], $options);
+    $opts->setInput($this->input);
+    $formatterManager = new FormatterManager();
+    $formatterManager->write($this->output, $opts->getFormat(), $envSshUrl, $opts);
+  }
+
 }
