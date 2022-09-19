@@ -10,7 +10,6 @@ use Consolidation\OutputFormatters\Options\FormatterOptions;
 use Consolidation\OutputFormatters\StructuredData\RowsOfFields;
 use DateTime;
 use DateTimeZone;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\VarDumper\VarDumper;
 
 class TaskCommand extends AcquiaCommand {
