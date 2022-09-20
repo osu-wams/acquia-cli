@@ -39,6 +39,20 @@ class DomainCommand extends AcquiaCommand {
     $this->flushVarnish($envUuid, $domain);
   }
 
+  /**
+   * Flush a single domain.
+   *
+   * @param string $appname
+   * @param string $envName
+   * @param string $domainName
+   *
+   * @command flush:single:site
+   */
+  public function flushSingleSiteVarnish(string $appName, string $envName, string $domainName) {
+    $appUuid = $this->getUuidFromName($appName);
+    $envUuid = $this->getEnvUuIdFromApp($appUuid, $envName);
+    $this->flushVarnish($envUuid, [$domainName]);
+  }
 
   /**
    * Create a new Domain in the given environment.
