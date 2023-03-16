@@ -6,6 +6,7 @@ namespace OsuWams\Commands;
 use AcquiaCloudApi\Connector\Client;
 use AcquiaCloudApi\Connector\Connector;
 use AcquiaCloudApi\Endpoints\Applications;
+use AcquiaCloudApi\Endpoints\Crons;
 use AcquiaCloudApi\Endpoints\DatabaseBackups;
 use AcquiaCloudApi\Endpoints\Databases;
 use AcquiaCloudApi\Endpoints\Domains;
@@ -212,7 +213,7 @@ abstract class AcquiaCommand extends Tasks {
       switch ($notification->status) {
         case self::TASKFAILED:
           throw new Exception('Acquia task failed.');
-          break(2);
+
         case self::TASKSTARTED:
         case self::TASKINPROGRESS:
           break;
@@ -220,7 +221,7 @@ abstract class AcquiaCommand extends Tasks {
           break(2);
         default:
           throw new Exception('Unknown notification status.');
-          break(2);
+
       }
       $current = new DateTime(date('c'));
       $current->setTimezone($timeZone);
@@ -338,6 +339,25 @@ abstract class AcquiaCommand extends Tasks {
       $domainList[] = $domain->hostname;
     }
     return $domainList;
+  }
+
+  protected function getCrons(string $envUuid) {
+    $cronList = [];
+    $crons = new Crons($this->client);
+    /** @var \AcquiaCloudApi\Response\CronResponse $cron */
+    foreach ($crons->getAll($envUuid) as $cron) {
+      $cronList[$cron->id] = [
+        "id" => $cron->id,
+        "label" => $cron->label,
+        "command" => $cron->command,
+        "minute" => $cron->minute,
+        "hour" => $cron->hour,
+        "dayWeek" => $cron->dayWeek,
+        "month" => $cron->month,
+        "dayMonth" => $cron->dayMonth,
+      ];
+    }
+    return $cronList;
   }
 
   /**
