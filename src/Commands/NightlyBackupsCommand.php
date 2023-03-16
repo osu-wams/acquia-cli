@@ -44,6 +44,8 @@ class NightlyBackupsCommand extends AcquiaCommand {
     $appUuId = $this->getUuidFromName($appName);
     $envUuId = $this->getEnvUuIdFromApp($appUuId, $env);
     $databaseList = $this->dbAdapter->getAll($appUuId);
+    $dbCount = count($databaseList);
+    $this->say("Backing up ${dbCount} databases.");
     /** @var \AcquiaCloudApi\Response\DatabaseResponse $databaseResponse */
     foreach ($databaseList as $databaseResponse) {
       $databaseName = $databaseResponse->name;
