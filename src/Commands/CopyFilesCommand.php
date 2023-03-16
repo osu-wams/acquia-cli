@@ -44,28 +44,28 @@ class CopyFilesCommand extends AcquiaCommand {
     $to = explode('@', $toUrl);
     $rsyncDown = $this->taskRsync()
       ->fromHost($fromUrl)
-      ->fromPath("/mnt/gfs/${from[0]}/sites/${site}/")
-      ->toPath("/tmp/${site}/")
+      ->fromPath("/mnt/gfs/${from[0]}/sites/$site/")
+      ->toPath("/tmp/$site/")
       ->archive()
       ->compress()
       ->excludeVcs()
       ->progress();
-    if ('y' === $this->ask("Do you want to copy ${site} files down? (y/n)")) {
+    if ('y' === $this->ask("Do you want to copy $site files down? (y/n)")) {
       $rsyncDown->run();
     }
     $rsyncUp = $this->taskRsync()
-      ->fromPath("/tmp/${site}/")
+      ->fromPath("/tmp/$site/")
       ->toHost($toUrl)
-      ->toPath("/mnt/gfs/${to[0]}/sites/${site}/")
+      ->toPath("/mnt/gfs/${to[0]}/sites/$site/")
       ->archive()
       ->compress()
       ->excludeVcs()
       ->progress();
-    if ('y' === $this->ask("Do you want to push ${site} files up? (y/n)")) {
+    if ('y' === $this->ask("Do you want to push $site files up? (y/n)")) {
       $rsyncUp->run();
     }
     $this->say('Deleting temporary file copy.');
-    $this->_deleteDir("/tmp/${site}");
+    $this->_deleteDir("/tmp/$site");
   }
 
   /**
@@ -95,13 +95,13 @@ class CopyFilesCommand extends AcquiaCommand {
     $from = explode('@', $fromUrl);
     $rsyncDown = $this->taskRsync()
       ->fromHost($fromUrl)
-      ->fromPath("/mnt/gfs/${from[0]}/sites/${site}/")
-      ->toPath("${destination}/${site}/")
+      ->fromPath("/mnt/gfs/${from[0]}/sites/$site/")
+      ->toPath("$destination/$site/")
       ->archive()
       ->compress()
       ->excludeVcs()
       ->progress();
-    if ('y' === $this->ask("Do you want to copy ${site} files down? (y/n)")) {
+    if ('y' === $this->ask("Do you want to copy $site files down? (y/n)")) {
       $rsyncDown->run();
     }
   }

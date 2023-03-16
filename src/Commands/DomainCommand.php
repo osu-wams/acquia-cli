@@ -145,7 +145,7 @@ class DomainCommand extends AcquiaCommand {
       $envUuId = $this->getEnvUuIdFromApp($appUuId, $environment);
     }
     catch (Exception $e) {
-      $this->say('Incorect Environment and Application id.');
+      $this->say('Incorrect Environment and Application id.');
     }
     $domainList = $this->getDomains($envUuId);
     $domainDeleteHelper = new ChoiceQuestion('Which Domain(s) do you want to delete, separate multiple by comma', $domainList);

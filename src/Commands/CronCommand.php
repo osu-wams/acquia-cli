@@ -39,7 +39,7 @@ class CronCommand extends AcquiaCommand {
     // Get a list of environments for this App UUID.
     $this->writeln('Getting Environment ID\'s...');
     $envList = $this->getEnvironments($appUuId);
-    // Get the From Env for this deploy.
+    // Get the Env for the scheduled jobs.
     $envHelper = new ChoiceQuestion('Which Environment do you want to see the domain list for...', $envList);
     $environment = $this->doAsk($envHelper);
     try {

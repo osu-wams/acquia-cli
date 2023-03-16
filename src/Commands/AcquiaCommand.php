@@ -213,7 +213,6 @@ abstract class AcquiaCommand extends Tasks {
       switch ($notification->status) {
         case self::TASKFAILED:
           throw new Exception('Acquia task failed.');
-
         case self::TASKSTARTED:
         case self::TASKINPROGRESS:
           break;
@@ -221,7 +220,6 @@ abstract class AcquiaCommand extends Tasks {
           break(2);
         default:
           throw new Exception('Unknown notification status.');
-
       }
       $current = new DateTime(date('c'));
       $current->setTimezone($timeZone);
@@ -291,22 +289,22 @@ abstract class AcquiaCommand extends Tasks {
     $toUser = explode('@', $toUrl);
     $this->taskRsync()
       ->fromHost($fromUrl)
-      ->fromPath("/mnt/gfs/${fromUser[0]}/sites/${siteName}/")
-      ->toPath("/tmp/${siteName}/")
+      ->fromPath("/mnt/gfs/${fromUser[0]}/sites/$siteName/")
+      ->toPath("/tmp/$siteName/")
       ->archive()
       ->compress()
       ->excludeVcs()
       ->run();
     $this->taskRsync()
-      ->fromPath("/tmp/${siteName}/")
+      ->fromPath("/tmp/$siteName/")
       ->toHost($toUrl)
-      ->toPath("/mnt/gfs/${toUser[0]}/sites/${siteName}/")
+      ->toPath("/mnt/gfs/${toUser[0]}/sites/$siteName/")
       ->archive()
       ->compress()
       ->excludeVcs()
       ->run();
     $this->say('Deleting temporary file copy.');
-    $this->_deleteDir("/tmp/${siteName}");
+    $this->_deleteDir("/tmp/$siteName");
   }
 
   /**
@@ -421,7 +419,7 @@ abstract class AcquiaCommand extends Tasks {
   }
 
   /**
-   * Perform a application file copy command.
+   * Perform an application file copy command.
    *
    * @param string $envUuIdFrom
    *  The Acquia Cloud UUID Source.
