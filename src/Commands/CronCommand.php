@@ -46,7 +46,6 @@ class CronCommand extends AcquiaCommand {
     'format' => 'table',
     'fields' => 'label,command',
   ]) {
-    dump($this->input->getOption('app'));
     if (is_null($options['app'])) {
       $this->say('Getting Applications...');
       $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to operate on', $this->getApplicationsId());
