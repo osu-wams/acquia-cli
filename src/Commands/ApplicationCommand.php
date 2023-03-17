@@ -30,6 +30,14 @@ class ApplicationCommand extends AcquiaCommand {
    * List all the cloud applications you have access to.
    *
    * @command cloud:apps
+   * @option $format Format the result data. Available formats:
+   *   csv,json,list,null,php,print-r,sections,string,table,tsv,var_dump,var_export,xml,yaml
+   * @option $fields Available fields: UUID (uuid),  Application Name (name),
+   *   Application ID (id)
+   *
+   * @param string[] $options
+   *
+   * @throws \Consolidation\OutputFormatters\Exception\InvalidFormatException
    */
   public function listApplications($options = [
     'format' => 'table',
