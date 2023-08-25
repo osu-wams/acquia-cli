@@ -42,9 +42,18 @@ class CopyFilesCommand extends AcquiaCommand {
     $toUrl = $env->get($envUuIdTo)->sshUrl;
     $from = explode('@', $fromUrl);
     $to = explode('@', $toUrl);
+    $platform = $env->get($envUuIdFrom)->platform;
+    if ($platform === 'cloud-next') {
+      $remotePathFrom = "/shared/sites/${from[0]}/sites/$site/";
+      $remotePathTo = "/shared/sites/${to[0]}/sites/$site/";
+    }
+    else {
+      $remotePathFrom = "/mnt/gfs/${from[0]}/sites/$site/";
+      $remotePathTo = "/mnt/gfs/${to[0]}/sites/$site/";
+    }
     $rsyncDown = $this->taskRsync()
       ->fromHost($fromUrl)
-      ->fromPath("/mnt/gfs/${from[0]}/sites/$site/")
+      ->fromPath($remotePathFrom)
       ->toPath("/tmp/$site/")
       ->archive()
       ->compress()
@@ -56,7 +65,7 @@ class CopyFilesCommand extends AcquiaCommand {
     $rsyncUp = $this->taskRsync()
       ->fromPath("/tmp/$site/")
       ->toHost($toUrl)
-      ->toPath("/mnt/gfs/${to[0]}/sites/$site/")
+      ->toPath($remotePathTo)
       ->archive()
       ->compress()
       ->excludeVcs()
@@ -93,9 +102,16 @@ class CopyFilesCommand extends AcquiaCommand {
     $env = new Environments($this->client);
     $fromUrl = $env->get($envUuIdFrom)->sshUrl;
     $from = explode('@', $fromUrl);
+    $platform = $env->get($envUuIdFrom)->platform;
+    if ($platform === 'cloud-next') {
+      $remotePath = "/shared/sites/${from[0]}/sites/$site/";
+    }
+    else {
+      $remotePath = "/mnt/gfs/${from[0]}/sites/$site/";
+    }
     $rsyncDown = $this->taskRsync()
       ->fromHost($fromUrl)
-      ->fromPath("/mnt/gfs/${from[0]}/sites/$site/")
+      ->fromPath($remotePath)
       ->toPath("$destination/$site/")
       ->archive()
       ->compress()
