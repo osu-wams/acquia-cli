@@ -17,7 +17,7 @@
   },
   "scripts": {
     "box-install": [
-      "curl -f -L https://github.com/box-project/box/releases/download/4.0.2/box.phar -o build/box.phar"
+      "curl -f -L https://github.com/box-project/box/releases/download/4.6.1/box.phar -o build/box.phar"
     ],
     "box-compile": [
       "php build/box.phar compile"
@@ -26,7 +26,7 @@
   "bin": "bin/acquiacli",
   "config": {
     "platform": {
-      "php": "7.4.3"
+      "php": "7.4.33"
     }
   },
   "require": {
