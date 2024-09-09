@@ -42,7 +42,7 @@ class DomainCommand extends AcquiaCommand {
   /**
    * Flush a single domain.
    *
-   * @param string $appname
+   * @param string $appName
    * @param string $envName
    * @param string $domainName
    *
