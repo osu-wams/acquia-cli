@@ -1,8 +1,6 @@
 <?php
 
-
 namespace OsuWams\Commands;
-
 
 use Exception;
 use Symfony\Component\Console\Question\ChoiceQuestion;
@@ -16,7 +14,6 @@ class DeployCommand extends AcquiaCommand {
 
   public function __construct() {
     parent::__construct();
-
   }
 
   /**
@@ -62,8 +59,8 @@ class DeployCommand extends AcquiaCommand {
     if (count($siteDbList) > 1) {
       $this->yell("This will not work on a multi site, use deploy:multisite instead", 80, "red");
     }
-    $verifyAnswer = $this->ask("You are about to deploy ${siteDb} from {$fromEnv} to ${toEnv} in the application ${appName}, do you wish to continue? (y/n)");
-    if ($verifyAnswer === 'y') {
+    $makeItSo = $this->confirm("You are about to deploy ${siteDb} from {$fromEnv} to ${toEnv} in the application ${appName}, do you wish to continue?", "y");
+    if ($makeItSo) {
       $this->say("Creating Backup in Destination Environment");
       // DO the site deploy with DB backup in destination environment.
       $this->createDbBackup($siteDb, $envUuidTo);
@@ -112,8 +109,8 @@ class DeployCommand extends AcquiaCommand {
     $siteHelper = new ChoiceQuestion('Select which Site to deploy.', $siteDbList);
     $siteDb = $this->doAsk($siteHelper);
     $siteUrl = str_replace('_', '.', $siteDb);
-    $verifySiteUrl = $this->ask("Is this the correct domain ${siteUrl}? (y/n)");
-    if ($verifySiteUrl === "n") {
+    $verifySiteUrl = $this->confirm("Is this the correct domain ${siteUrl}?", "y");
+    if (!$verifySiteUrl) {
       $updateSiteUrl = $this->ask("What is the correct domain of the site?");
       $siteUrl = $updateSiteUrl;
     }
@@ -127,10 +124,10 @@ class DeployCommand extends AcquiaCommand {
     }
     catch (Exception $e) {
     }
-    $verifyAnswer = $this->ask("You are about to deploy ${siteUrl} from {$fromEnv} to ${toEnv} in the application ${appName}, do you wish to continue? (y/n)");
-    if ($verifyAnswer === 'y') {
+    $verifyAnswer = $this->confirm("You are about to deploy ${siteUrl} from {$fromEnv} to ${toEnv} in the application ${appName}, do you wish to continue?", "y");
+    if ($verifyAnswer) {
       $this->say("Creating Backup in Destination Environment");
-      // DO the site deploy with DB backup in destination environment.
+      // Do the site deploy with DB backup in destination environment.
       $this->createDbBackup($siteDb, $envUuidTo);
       // Need to wait for task.
       $this->say("Coping Database from ${fromEnv} to ${toEnv}.");
