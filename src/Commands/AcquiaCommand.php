@@ -1,6 +1,5 @@
 <?php
 
-
 namespace OsuWams\Commands;
 
 use AcquiaCloudApi\Connector\Client;
@@ -92,7 +91,6 @@ abstract class AcquiaCommand extends Tasks {
       if ($appName === $application->hosting->id) {
         return $application->uuid;
       }
-
     }
     throw new Exception('Unable to find that application.');
   }
