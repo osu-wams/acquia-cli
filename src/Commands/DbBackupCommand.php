@@ -46,47 +46,21 @@ class DbBackupCommand extends AcquiaCommand {
     'fields' => '',
   ]
   ) {
-    if (is_null($options['app'])) {
-      $this->say('Getting Applications...');
-      $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to operate on', $this->getApplicationsId());
-      $appName = $this->doAsk($appHelper);
-    }
-    else {
-      $appName = $options['app'];
-    }
+    $appName = $this->getAppName($options);
     try {
       $appUuId = $this->getUuidFromName($appName);
     }
     catch (Exception $e) {
       $this->say('Incorrect Application ID.');
     }
-    if (is_null($options['env'])) {
-      // Get a list of environments for this App UUID.
-      $this->writeln('Getting Environment ID\'s...');
-      $envList = $this->getEnvironments($appUuId);
-      // Get the Env for the scheduled jobs.
-      $envHelper = new ChoiceQuestion('Which Environment do you want to backup a database for...', $envList);
-      $environment = $this->doAsk($envHelper);
-    }
-    else {
-      $environment = $options['env'];
-    }
+    $environment = $this->getEnvName($options, $appUuId);
     try {
       $envUuId = $this->getEnvUuIdFromApp($appUuId, $environment);
     }
     catch (Exception $e) {
       $this->say('Incorrect Environment and Application id.');
     }
-    if (is_null($options['dbname'])) {
-      // Get database names.
-      $this->writeln("Getting Database Name's...");
-      $dbNames = $this->getDatabases($appUuId);
-      $dbNameHelper = new ChoiceQuestion('Which Database do you want to backup?', $dbNames);
-      $dbName = $this->doAsk($dbNameHelper);
-    }
-    else {
-      $dbName = $options['dbname'];
-    }
+    $dbName = $this->getDbName($options, $appUuId);
     $makeItSo = $this->confirm("Do you want to create a backup for {$dbName}?", "y");
     if ($makeItSo) {
       $this->createDbBackup($dbName, $envUuId);
@@ -95,6 +69,69 @@ class DbBackupCommand extends AcquiaCommand {
     else {
       $this->say("Aborting.");
     }
+  }
+
+  /**
+   * Retrieves the application name from the provided options or prompts the
+   * user to select one.
+   *
+   * @param array $options An associative array of options including the key
+   *   'app' for the application name.
+   *
+   * @return string The name of the application.
+   */
+  private function getAppName(array $options): string {
+    if (is_null($options['app'])) {
+      $this->say('Getting Applications...');
+      $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to operate on', $this->getApplicationsId());
+      return $this->doAsk($appHelper);
+    }
+    return $options['app'];
+  }
+
+  /**
+   * Retrieves the environment name from the provided options or prompts the
+   * user to select one based on the given application UUID.
+   *
+   * @param array $options An associative array of options including the key
+   *   'env' for the environment name.
+   * @param string $appUuId The UUID of the application for which to retrieve
+   *   the environments.
+   *
+   * @return string The name of the environment.
+   */
+  private function getEnvName(array $options, string $appUuId) {
+    if (is_null($options['env'])) {
+      // Get a list of environments for this App UUID.
+      $this->writeln('Getting Environment IDs...');
+      $envList = $this->getEnvironments($appUuId);
+      // Get the Env for the scheduled jobs.
+      $envHelper = new ChoiceQuestion('Which Environment do you want...', $envList);
+      return $this->doAsk($envHelper);
+    }
+    return $options['env'];
+  }
+
+  /**
+   * Retrieves the database name from the provided options or prompts the
+   * user to select one.
+   *
+   * @param array $options An associative array of options including the key
+   *   'dbname' for the database name.
+   * @param string $appUuId The UUID of the application from which the database
+   *   names will be retrieved if not provided in options.
+   *
+   * @return string The name of the database.
+   */
+  private function getDbName(array $options, string $appUuId) {
+    if (is_null($options['dbname'])) {
+      // Get database names.
+      $this->writeln("Getting Database Names...");
+      $dbNames = $this->getDatabases($appUuId);
+      $dbNameHelper = new ChoiceQuestion('Which Database do you want...', $dbNames);
+      return $this->doAsk($dbNameHelper);
+    }
+    return $options['dbname'];
   }
 
   /**
@@ -121,47 +158,21 @@ class DbBackupCommand extends AcquiaCommand {
     'fields' => '',
   ]
   ) {
-    if (is_null($options['app'])) {
-      $this->say('Getting Applications...');
-      $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to operate on', $this->getApplicationsId());
-      $appName = $this->doAsk($appHelper);
-    }
-    else {
-      $appName = $options['app'];
-    }
+    $appName = $this->getAppName($options);
     try {
       $appUuId = $this->getUuidFromName($appName);
     }
     catch (Exception $e) {
       $this->say('Incorrect Application ID.');
     }
-    if (is_null($options['env'])) {
-      // Get a list of environments for this App UUID.
-      $this->writeln('Getting Environment ID\'s...');
-      $envList = $this->getEnvironments($appUuId);
-      // Get the Env for the scheduled jobs.
-      $envHelper = new ChoiceQuestion('Which Environment do you want to see the Database list for...', $envList);
-      $environment = $this->doAsk($envHelper);
-    }
-    else {
-      $environment = $options['env'];
-    }
+    $environment = $this->getEnvName($options, $appUuId);
     try {
       $envUuId = $this->getEnvUuIdFromApp($appUuId, $environment);
     }
     catch (Exception $e) {
       $this->say('Incorrect Environment and Application id.');
     }
-    if (is_null($options['dbname'])) {
-      // Get database names.
-      $this->writeln("Getting Database Name's...");
-      $dbNames = $this->getDatabases($appUuId);
-      $dbNameHelper = new ChoiceQuestion('Which Database do you want to list backups for?', $dbNames);
-      $dbName = $this->doAsk($dbNameHelper);
-    }
-    else {
-      $dbName = $options['dbname'];
-    }
+    $dbName = $this->getDbName($options, $appUuId);
     if (is_null($options['backupId'])) {
       $this->writeln("Getting Backups...");
       $backups = $this->databaseBackupAdapter->getAll($envUuId, $dbName);
@@ -217,14 +228,7 @@ class DbBackupCommand extends AcquiaCommand {
     'fields' => '',
   ]
   ) {
-    if (is_null($options['app'])) {
-      $this->say('Getting Applications...');
-      $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to operate on', $this->getApplicationsId());
-      $appName = $this->doAsk($appHelper);
-    }
-    else {
-      $appName = $options['app'];
-    }
+    $appName = $this->getAppName($options);
     // Attempt to get the UUID of this application.
     try {
       $appUuId = $this->getUuidFromName($appName);
@@ -232,33 +236,14 @@ class DbBackupCommand extends AcquiaCommand {
     catch (Exception $e) {
       $this->say('Incorrect Application ID.');
     }
-    if (is_null($options['env'])) {
-      // Get a list of environments for this App UUID.
-      $this->writeln('Getting Environment ID\'s...');
-      $envList = $this->getEnvironments($appUuId);
-      // Get the Env for the scheduled jobs.
-      $envHelper = new ChoiceQuestion('Which Environment do you want to see the Database list for...', $envList);
-      $environment = $this->doAsk($envHelper);
-    }
-    else {
-      $environment = $options['env'];
-    }
+    $environment = $this->getEnvName($options, $appUuId);
     try {
       $envUuId = $this->getEnvUuIdFromApp($appUuId, $environment);
     }
     catch (Exception $e) {
       $this->say('Incorrect Environment and Application id.');
     }
-    if (is_null($options['dbname'])) {
-      // Get database names.
-      $this->writeln("Getting Database Name's...");
-      $dbNames = $this->getDatabases($appUuId);
-      $dbNameHelper = new ChoiceQuestion('Which Database do you want to list backups for?', $dbNames);
-      $dbName = $this->doAsk($dbNameHelper);
-    }
-    else {
-      $dbName = $options['dbname'];
-    }
+    $dbName = $this->getDbName($options, $appUuId);
     $backups = $this->databaseBackupAdapter->getAll($envUuId, $dbName);
     $rows = [];
     /** @var \AcquiaCloudApi\Response\BackupResponse $backup */
@@ -303,14 +288,7 @@ class DbBackupCommand extends AcquiaCommand {
     'fields' => '',
   ]
   ) {
-    if (is_null($options['app'])) {
-      $this->say('Getting Applications...');
-      $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to operate on', $this->getApplicationsId());
-      $appName = $this->doAsk($appHelper);
-    }
-    else {
-      $appName = $options['app'];
-    }
+    $appName = $this->getAppName($options);
     // Attempt to get the UUID of this application.
     try {
       $appUuId = $this->getUuidFromName($appName);
@@ -318,33 +296,14 @@ class DbBackupCommand extends AcquiaCommand {
     catch (Exception $e) {
       $this->say('Incorrect Application ID.');
     }
-    if (is_null($options['env'])) {
-      // Get a list of environments for this App UUID.
-      $this->writeln('Getting Environment ID\'s...');
-      $envList = $this->getEnvironments($appUuId);
-      // Get the Env for the scheduled jobs.
-      $envHelper = new ChoiceQuestion('Which Environment do you want to see the Database list for...', $envList);
-      $environment = $this->doAsk($envHelper);
-    }
-    else {
-      $environment = $options['env'];
-    }
+    $environment = $this->getEnvName($options, $appUuId);
     try {
       $envUuId = $this->getEnvUuIdFromApp($appUuId, $environment);
     }
     catch (Exception $e) {
       $this->say('Incorrect Environment and Application id.');
     }
-    if (is_null($options['dbname'])) {
-      // Get database names.
-      $this->writeln("Getting Database Name's...");
-      $dbNames = $this->getDatabases($appUuId);
-      $dbNameHelper = new ChoiceQuestion('Which Database do you want to delete all On Demand backups for?', $dbNames);
-      $dbName = $this->doAsk($dbNameHelper);
-    }
-    else {
-      $dbName = $options['dbname'];
-    }
+    $dbName = $this->getDbName($options, $appUuId);
     $backups = $this->databaseBackupAdapter->getAll($envUuId, $dbName);
     $makeItSo = $this->confirm("You are about to delete all ondemand backups for ${dbName} in ${appName}, are you sure?", 'y');
     if ($makeItSo) {
@@ -374,7 +333,8 @@ class DbBackupCommand extends AcquiaCommand {
    * @usage db:backup:download-latest --app=prod:app
    * @usage db:backup:download-latest --env=prod
    * @usage db:backup:download-latest --dbname=database_name
-   * @usage db:backup:download-latest --app=prod:app --env=prod --dbname=database_name
+   * @usage db:backup:download-latest --app=prod:app --env=prod
+   *   --dbname=database_name
    */
   public function downloadLatestBackups(array $options = [
     'app' => NULL,
@@ -382,14 +342,7 @@ class DbBackupCommand extends AcquiaCommand {
     'dbname' => NULL,
   ]
   ) {
-    if (is_null($options['app'])) {
-      $this->say('Getting Applications...');
-      $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to operate on', $this->getApplicationsId());
-      $appName = $this->doAsk($appHelper);
-    }
-    else {
-      $appName = $options['app'];
-    }
+    $appName = $this->getAppName($options);
     // Attempt to get the UUID of this application.
     try {
       $appUuId = $this->getUuidFromName($appName);
@@ -397,33 +350,14 @@ class DbBackupCommand extends AcquiaCommand {
     catch (Exception $e) {
       $this->say('Incorrect Application ID.');
     }
-    if (is_null($options['env'])) {
-      // Get a list of environments for this App UUID.
-      $this->writeln('Getting Environment ID\'s...');
-      $envList = $this->getEnvironments($appUuId);
-      // Get the Env for the scheduled jobs.
-      $envHelper = new ChoiceQuestion('Which Environment do you want to see the Database list for...', $envList);
-      $environment = $this->doAsk($envHelper);
-    }
-    else {
-      $environment = $options['env'];
-    }
+    $environment = $this->getEnvName($options, $appUuId);
     try {
       $envUuId = $this->getEnvUuIdFromApp($appUuId, $environment);
     }
     catch (Exception $e) {
       $this->say('Incorrect Environment and Application id.');
     }
-    if (is_null($options['dbname'])) {
-      // Get database names.
-      $this->writeln("Getting Database Name's...");
-      $dbNames = $this->getDatabases($appUuId);
-      $dbNameHelper = new ChoiceQuestion('Which Database do you want to download the latest backup for?', $dbNames);
-      $dbName = $this->doAsk($dbNameHelper);
-    }
-    else {
-      $dbName = $options['dbname'];
-    }
+    $dbName = $this->getDbName($options, $appUuId);
     $allBackups = $this->databaseBackupAdapter->getAll($envUuId, $dbName);
     // Filter our backups to only include daily backups.
     $dailyBackups = array_filter($allBackups->getArrayCopy(), function($backup) {
