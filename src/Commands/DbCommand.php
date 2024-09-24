@@ -1,8 +1,6 @@
 <?php
 
-
 namespace OsuWams\Commands;
-
 
 use AcquiaCloudApi\Endpoints\Databases;
 use Consolidation\OutputFormatters\FormatterManager;
@@ -27,15 +25,33 @@ class DbCommand extends AcquiaCommand {
   /**
    * List All Databases for the given Application.
    *
-   * @param string $appName
-   *  The Acquia CLoud Application Name.
+   * @param array $options
+   *  An array of options
+   * @option $app The Acquia Cloud Application name: prod:shortname
+   * @option $format Format the result data. Available formats:
+   * csv,json,list,null,php,print-r,sections,string,table,tsv,var_dump,var_export,xml,yaml
+   * @option $fields Available fields: Cron ID (id), Label, (label), Command
    *
    * @command db:list
+   *
+   * @usage db:list
+   * @usage db:list --app=prod:app
+   * @usage db:list --app=prod:app --format=json
    */
-  public function listDatabases($appName, $options = [
+  public function listDatabases(array $options = [
+    'app' => NULL,
     'format' => 'table',
     'fields' => '',
-  ]) {
+  ]
+  ) {
+    if (is_null($options['app'])) {
+      $this->say('Getting Applications...');
+      $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to operate on', $this->getApplicationsId());
+      $appName = $this->doAsk($appHelper);
+    }
+    else {
+      $appName = $options['app'];
+    }
     try {
       $appUuId = $this->getUuidFromName($appName);
     }

@@ -18,7 +18,7 @@ class CronCommand extends AcquiaCommand {
   /**
    * Get a list of Scheduled Jobs.
    *
-   * Optional arguments: app,env. If app and/or env are not provided a helper will ask you to select
+   * Optional arguments: app,env. If app and/or env are not provided, a helper will ask you to select
    * from a generated list.
    *
    * @command cron:list
