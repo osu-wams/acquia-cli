@@ -362,11 +362,68 @@ class DbBackupCommand extends AcquiaCommand {
   }
 
   /**
+   * Download the latest backup for a Database.
+   *
+   * @param array $options An array of options
+   * @option $app The Acquia Cloud Application name: prod:shortname
+   * @option $env The Environment short name: dev|prod|test
+   * @option $dbname The Database Name to get backups for.
+   *
    * @command db:backup:download-latest
+   * @usage db:backup:download-latest
+   * @usage db:backup:download-latest --app=prod:app
+   * @usage db:backup:download-latest --env=prod
+   * @usage db:backup:download-latest --dbname=database_name
+   * @usage db:backup:download-latest --app=prod:app --env=prod --dbname=database_name
    */
-  public function downloadLatestBackups($appName, $env, $dbName) {
-    $appUuId = $this->getUuidFromName($appName);
-    $envUuId = $this->getEnvUuIdFromApp($appUuId, $env);
+  public function downloadLatestBackups(array $options = [
+    'app' => NULL,
+    'env' => NULL,
+    'dbname' => NULL,
+  ]
+  ) {
+    if (is_null($options['app'])) {
+      $this->say('Getting Applications...');
+      $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to operate on', $this->getApplicationsId());
+      $appName = $this->doAsk($appHelper);
+    }
+    else {
+      $appName = $options['app'];
+    }
+    // Attempt to get the UUID of this application.
+    try {
+      $appUuId = $this->getUuidFromName($appName);
+    }
+    catch (Exception $e) {
+      $this->say('Incorrect Application ID.');
+    }
+    if (is_null($options['env'])) {
+      // Get a list of environments for this App UUID.
+      $this->writeln('Getting Environment ID\'s...');
+      $envList = $this->getEnvironments($appUuId);
+      // Get the Env for the scheduled jobs.
+      $envHelper = new ChoiceQuestion('Which Environment do you want to see the Database list for...', $envList);
+      $environment = $this->doAsk($envHelper);
+    }
+    else {
+      $environment = $options['env'];
+    }
+    try {
+      $envUuId = $this->getEnvUuIdFromApp($appUuId, $environment);
+    }
+    catch (Exception $e) {
+      $this->say('Incorrect Environment and Application id.');
+    }
+    if (is_null($options['dbname'])) {
+      // Get database names.
+      $this->writeln("Getting Database Name's...");
+      $dbNames = $this->getDatabases($appUuId);
+      $dbNameHelper = new ChoiceQuestion('Which Database do you want to download the latest backup for?', $dbNames);
+      $dbName = $this->doAsk($dbNameHelper);
+    }
+    else {
+      $dbName = $options['dbname'];
+    }
     $allBackups = $this->databaseBackupAdapter->getAll($envUuId, $dbName);
     // Filter our backups to only include daily backups.
     $dailyBackups = array_filter($allBackups->getArrayCopy(), function($backup) {
@@ -377,7 +434,20 @@ class DbBackupCommand extends AcquiaCommand {
       return $a->completedAt < $b->completedAt;
     });
     $backupId = $dailyBackups[0]->id;
-    file_put_contents($dbName . '.sql.gz', $this->databaseBackupAdapter->download($envUuId, $dbName, $backupId));
+    $this->say("Downloading the latest daily backup...");
+    try {
+      $stream = $this->databaseBackupAdapter->download($envUuId, $dbName, $backupId);
+      $fileHandle = fopen($dbName . '.sql.gz', 'w');
+      while (!$stream->eof()) {
+        fwrite($fileHandle, $stream->read(8192));
+      }
+      fclose($fileHandle);
+      $this->say("Backup downloaded.");
+    }
+    catch (Exception $e) {
+      $this->say('Error downloading the latest backup.');
+      $this->say($e->getMessage());
+    }
   }
 
 }
