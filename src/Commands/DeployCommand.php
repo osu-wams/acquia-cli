@@ -101,10 +101,10 @@ class DeployCommand extends AcquiaCommand {
     // Get a list of environments for this App UUID.
     $this->writeln('Getting Environment ID\'s...');
     $envList = $this->getEnvironments($appUuId);
-    // Get the From Env for this deploy.
+    // Get the source Env for this deployment.
     $fromEnvHelper = new ChoiceQuestion('Select which Environment to deploy from', $envList);
     $fromEnv = $this->doAsk($fromEnvHelper);
-    // Get the To Env for this deploy.
+    // Get the To Env for this deployment.
     $toEnvHelper = new ChoiceQuestion('Select which Environment to deploy to', array_diff($envList, [$fromEnv]));
     $toEnv = $this->doAsk($toEnvHelper);
     // Get th Site to deploy.
@@ -112,7 +112,7 @@ class DeployCommand extends AcquiaCommand {
     $siteHelper = new ChoiceQuestion('Select which Site to deploy.', $siteDbList);
     $siteDb = $this->doAsk($siteHelper);
     $siteUrl = str_replace('_', '.', $siteDb);
-    $verifySiteUrl = $this->ask("Is this the correct domain ${siteUrl}");
+    $verifySiteUrl = $this->ask("Is this the correct domain ${siteUrl}? (y/n)");
     if ($verifySiteUrl === "n") {
       $updateSiteUrl = $this->ask("What is the correct domain of the site?");
       $siteUrl = $updateSiteUrl;
