@@ -31,7 +31,7 @@
   },
   "require": {
     "php": "^7.4",
-    "consolidation/robo": "^3.0",
+    "consolidation/robo": "^4.0",
     "league/oauth2-client": "^2.4",
     "ext-json": "*",
     "typhonius/acquia-php-sdk-v2": "^2.0",
