@@ -2,10 +2,13 @@
 
 // If we're running from phar load the phar autoload file.
 use OsuWams\Cli\AcquiaCli;
+use OsuWams\CliSetup;
 use Robo\Robo;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Filesystem\Path;
+
+const EX_CONFIG = 78;
 
 $pharPath = Phar::running(TRUE);
 if ($pharPath) {
@@ -58,6 +61,11 @@ $config = Robo::createConfiguration([$globalConfig, $localConfig]);
 if (isset($environment['acquia']['key']) && isset($environment['acquia']['secret'])) {
   $config->set('acquia.key', $environment['acquia']['key']);
   $config->set('acquia.secret', $environment['acquia']['secret']);
+}
+if (is_null($config->get('acquia.key')) || is_null($config->get('acquia.secret'))) {
+  $setupHelper = new CliSetup($input, $output);
+  $setupHelper->cliSetupHelper();
+  exit(EX_CONFIG);
 }
 $app = new AcquiaCli($config, $input, $output);
 $statusCode = $app->run($input, $output);
