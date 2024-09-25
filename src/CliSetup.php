@@ -5,6 +5,7 @@ namespace OsuWams;
 use Robo\Tasks;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * This class handles the CLI setup for authenticating with Acquia Cloud.
@@ -42,8 +43,9 @@ class CliSetup extends Tasks {
    * Helper method for setting up CLI authentication with Acquia Cloud.
    *
    * Prompts the user to confirm whether they want to set up authentication.
-   * If confirmed, it asks for the Acquia Cloud API Key and Secret, then attempts to save the credentials.
-   * Provides feedback on the success or failure of saving the credentials.
+   * If confirmed, it asks for the Acquia Cloud API Key and Secret, then
+   * attempts to save the credentials. Provides feedback on the success or
+   * failure of saving the credentials.
    *
    * @return void
    */
@@ -80,8 +82,13 @@ class CliSetup extends Tasks {
     }
 
     $configPath = "$configDir/acquia-cli.yml";
-    $configContent = sprintf("acquia:\n  key: '%s'\n  secret: '%s'\n", $apiKey, $apiSecret);
-
+    $configData = [
+      'acquia' => [
+        'key' => $apiKey,
+        'secret' => $apiSecret,
+      ],
+    ];
+    $configContent = Yaml::dump($configData, 4, 2);
     return file_put_contents($configPath, $configContent) !== FALSE;
   }
 
