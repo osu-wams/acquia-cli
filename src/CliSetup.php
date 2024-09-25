@@ -65,6 +65,14 @@ class CliSetup extends Tasks {
     }
   }
 
+  /**
+   * Saves the provided API credentials to a configuration file.
+   *
+   * @param string $apiKey The API key.
+   * @param string $apiSecret The API secret.
+   *
+   * @return bool TRUE on success, FALSE on failure.
+   */
   private function saveCredentials(string $apiKey, string $apiSecret): bool {
     $configDir = $this->getConfigDir();
     if (!is_dir($configDir) && !mkdir($configDir, 0777, TRUE)) {
@@ -77,6 +85,11 @@ class CliSetup extends Tasks {
     return file_put_contents($configPath, $configContent) !== FALSE;
   }
 
+  /**
+   * Retrieves the configuration directory path.
+   *
+   * @return string The path to the configuration directory.
+   */
   private function getConfigDir(): string {
     return join(DIRECTORY_SEPARATOR, [
       getenv('HOME') ?: getenv('USERPROFILE'),
