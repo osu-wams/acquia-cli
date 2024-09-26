@@ -64,8 +64,8 @@ if (isset($environment['acquia']['key']) && isset($environment['acquia']['secret
 }
 if (is_null($config->get('acquia.key')) || is_null($config->get('acquia.secret'))) {
   $setupHelper = new CliSetup($input, $output);
-  $setupHelper->cliSetupHelper();
-  exit(EX_CONFIG);
+  $statusCode = $setupHelper->cliSetupHelper();
+  exit($statusCode);
 }
 $app = new AcquiaCli($config, $input, $output);
 $statusCode = $app->run($input, $output);
