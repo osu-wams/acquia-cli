@@ -174,7 +174,7 @@ class CronCommand extends AcquiaCommand {
     $cronMonth = $this->askDefault('Enter the cron month: (1-12)', '*');
     $cronDayWeek = $this->askDefault('Enter the cron day of week: (0-6)', '*');
     $frequency = "$cronMinute $cronHour $cronDayMonth $cronMonth $cronDayWeek";
-    $makeItSo = $this->confirm("Create the cron job with the label '$cronLabel'.\nCommand of '$cronCommand'.\nWith the frequency of '$frequency'?");
+    $makeItSo = $this->confirm("Create the cron job with the label '$cronLabel'.\nCommand of '$cronCommand'.\nWith the frequency of '$frequency'?", "Y");
     if ($makeItSo) {
       $this->createCron($envUuId, $cronCommand, $frequency, $cronLabel);
     }
