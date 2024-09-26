@@ -357,6 +357,25 @@ abstract class AcquiaCommand extends Tasks {
   }
 
   /**
+   * Create a cron job.
+   *
+   * @param string $envUuid
+   *  The environment UUID.
+   * @param string $command
+   *  The cron command to execute.
+   * @param string $frequency
+   *  The frequency of the cron job.
+   * @param string $label
+   *  The label for the cron job.
+   *
+   * @return \AcquiaCloudApi\Response\OperationResponse
+   */
+  protected function createCron(string $envUuid, string $command, string $frequency, string $label) {
+    $cron = new Crons($this->client);
+    return $cron->create($envUuid, $command, $frequency, $label);
+  }
+
+  /**
    * Create a new Database.
    *
    * @param string $appUuId
