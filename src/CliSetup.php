@@ -2,6 +2,7 @@
 
 namespace OsuWams;
 
+use OsuWams\Exception\FileSaveException;
 use Robo\Tasks;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -11,6 +12,24 @@ use Symfony\Component\Yaml\Yaml;
  * This class handles the CLI setup for authenticating with Acquia Cloud.
  */
 class CliSetup extends Tasks {
+
+  /**
+   * Exit status code indicating a configuration error.
+   *
+   * The value of this constant is 78.
+   *
+   * @var int
+   */
+  private const EX_CONFIG = 78;
+
+  /**
+   *  Exit status code for normal operations.
+   *
+   * The value of this constant is 0;
+   *
+   * @var int
+   */
+  private const EX_NORMAL = 0;
 
   /**
    * The input interface.
@@ -47,37 +66,46 @@ class CliSetup extends Tasks {
    * attempts to save the credentials. Provides feedback on the success or
    * failure of saving the credentials.
    *
-   * @return void
+   * @return int
    */
-  public function cliSetupHelper() {
+  public function cliSetupHelper(): int {
     $startConfirm = $this->confirm("Not yet configured to authenticate with Acquia Cloud, do you want to setup?", "y");
     if ($startConfirm) {
       $apiKey = $this->askHidden("Please enter an Acquia Cloud API Key");
       $apiSecret = $this->askHidden("Please enter an Acquia Cloud Secret");
-
-      if ($this->saveCredentials($apiKey, $apiSecret)) {
-        $this->say("Credentials saved successfully.");
+      try {
+        if ($this->saveCredentials($apiKey, $apiSecret)) {
+          $this->say("Credentials saved successfully.");
+          return self::EX_NORMAL;
+        }
+        else {
+          $this->say("Failed to save credentials.");
+          return self::EX_CONFIG;
+        }
       }
-      else {
-        $this->say("Failed to save credentials.");
+      catch (FileSaveException $e) {
+        $this->writeln($e->getMessage());
+        return $e->getCode() ?: 1;
       }
     }
     else {
       $this->say("Setup cancelled. Exiting...");
+      return self::EX_NORMAL;
     }
   }
 
   /**
-   * Saves the provided API credentials to a configuration file.
+   * Saves API credentials to a configuration file.
    *
-   * @param string $apiKey The API key.
-   * @param string $apiSecret The API secret.
+   * @param string $apiKey The API key to be saved.
+   * @param string $apiSecret The API secret to be saved.
    *
-   * @return bool TRUE on success, FALSE on failure.
+   * @return bool Returns TRUE on success, FALSE on failure.
+   * @throws \OsuWams\Exception\FileSaveException
    */
   private function saveCredentials(string $apiKey, string $apiSecret): bool {
     $configDir = $this->getConfigDir();
-    if (!is_dir($configDir) && !mkdir($configDir, 0777, TRUE)) {
+    if (!is_dir($configDir) && !mkdir($configDir, 0755, TRUE)) {
       return FALSE;
     }
 
@@ -89,7 +117,11 @@ class CliSetup extends Tasks {
       ],
     ];
     $configContent = Yaml::dump($configData, 4, 2);
-    return file_put_contents($configPath, $configContent) !== FALSE;
+
+    if (file_put_contents($configPath, $configContent) === FALSE) {
+      throw new FileSaveException("Failed to save the file: $configPath");
+    }
+    return TRUE;
   }
 
   /**
