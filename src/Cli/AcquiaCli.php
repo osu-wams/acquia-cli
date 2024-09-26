@@ -59,7 +59,14 @@ class AcquiaCli {
     $this->runner->setSelfUpdateRepository(self::REPOSITORY);
   }
 
-
+  /**
+   * Executes the runner's run method with the provided input and output interfaces.
+   *
+   * @param InputInterface $input The input interface to be processed by the runner.
+   * @param OutputInterface $output The output interface where the runner's results will be directed.
+   *
+   * @return mixed The result of the runner's run method.
+   */
   public function run(InputInterface $input, OutputInterface $output) {
     return $this->runner->run($input, $output);
   }
