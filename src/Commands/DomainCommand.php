@@ -258,7 +258,6 @@ class DomainCommand extends AcquiaCommand {
     catch (Exception $e) {
       $this->say('Incorrect Environment and Application id.');
     }
-    $options->
     $domainList = $this->listAllDomains($envUuId);
 
     return new RowsOfFields($domainList);
