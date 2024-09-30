@@ -331,8 +331,28 @@ abstract class AcquiaCommand extends Tasks {
   protected function getDomains(string $envUuid) {
     $domainList = [];
     $domains = new Domains($this->client);
+    /** @var \AcquiaCloudApi\Response\DomainResponse $domain */
     foreach ($domains->getAll($envUuid) as $domain) {
       $domainList[] = $domain->hostname;
+    }
+    return $domainList;
+  }
+
+  /**
+   * List all domains for a given environment.
+   *
+   * @param string $envUuid
+   *  The Acquia Cloud Environment UUID.
+   *
+   * @return array
+   *  An array of domains with their respective details.
+   */
+  protected function listAllDomains(string $envUuid) {
+    $domainList = [];
+    $domains = new Domains($this->client);
+    /** @var \AcquiaCloudApi\Response\DomainResponse $domain */
+    foreach ($domains->getAll($envUuid) as $domain) {
+      $domainList[$domain->hostname] = ['hostname' => $domain->hostname];
     }
     return $domainList;
   }

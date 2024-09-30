@@ -2,8 +2,6 @@
 
 namespace OsuWams\Commands;
 
-use Consolidation\OutputFormatters\FormatterManager;
-use Consolidation\OutputFormatters\Options\FormatterOptions;
 use Consolidation\OutputFormatters\StructuredData\RowsOfFields;
 use Exception;
 use Symfony\Component\Console\Question\ChoiceQuestion;
@@ -260,17 +258,10 @@ class DomainCommand extends AcquiaCommand {
     catch (Exception $e) {
       $this->say('Incorrect Environment and Application id.');
     }
-    $domainList = $this->getDomains($envUuId);
-    $rows = [];
-    foreach ($domainList as $domain) {
-      $rows[] = ['domain' => $domain];
-    }
-    $opts = new FormatterOptions([], $options);
-    $opts->setInput($this->input);
-    $opts->setFieldLabels(['domain' => 'Domain Name']);
-    $opts->setDefaultStringField('domain');
-    $formatterManager = new FormatterManager();
-    $formatterManager->write($this->output, $opts->getFormat(), new RowsOfFields($rows), $opts);
+    $options->
+    $domainList = $this->listAllDomains($envUuId);
+
+    return new RowsOfFields($domainList);
   }
 
   /**
