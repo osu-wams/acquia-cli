@@ -352,7 +352,13 @@ abstract class AcquiaCommand extends Tasks {
     $domains = new Domains($this->client);
     /** @var \AcquiaCloudApi\Response\DomainResponse $domain */
     foreach ($domains->getAll($envUuid) as $domain) {
-      $domainList[$domain->hostname] = ['hostname' => $domain->hostname];
+      $domainList[$domain->hostname] = [
+        'hostname' => $domain->hostname,
+        'cname' => $domain->cnames,
+        'default' => $domain->flags->default ? "True" : "False",
+        'active' => $domain->flags->active ? "True" : "False",
+        'wildcard' => $domain->flags->wildcard ? "True" : "False",
+      ];
     }
     return $domainList;
   }

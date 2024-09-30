@@ -226,7 +226,7 @@ class DomainCommand extends AcquiaCommand {
    * @option $env The Environment short name: dev|prod|test
    * @option $format Format the result data. Available formats:
    * csv,json,list,null,php,print-r,sections,string,table,tsv,var_dump,var_export,xml,yaml
-   * @option $fields Available fields: domain_name
+   * @option $fields Available fields: hostname,cname,default,active,wildcard
    *
    * @command domain:list
    *
@@ -240,7 +240,7 @@ class DomainCommand extends AcquiaCommand {
     'app' => NULL,
     'env' => NULL,
     'format' => 'table',
-    'fields' => '',
+    'fields' => 'hostname',
   ]
   ) {
     $appName = $this->getAppName($options);
@@ -259,7 +259,6 @@ class DomainCommand extends AcquiaCommand {
       $this->say('Incorrect Environment and Application id.');
     }
     $domainList = $this->listAllDomains($envUuId);
-
     return new RowsOfFields($domainList);
   }
 
