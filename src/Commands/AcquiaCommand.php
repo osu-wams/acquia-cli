@@ -396,7 +396,7 @@ abstract class AcquiaCommand extends Tasks {
    *
    * @return \AcquiaCloudApi\Response\OperationResponse
    */
-  protected function createCron(string $envUuid, string $command, string $frequency, string $label) {
+  protected function createCron(string $envUuid, string $command, string $frequency, string $label): OperationResponse {
     $cron = new Crons($this->client);
     return $cron->create($envUuid, $command, $frequency, $label);
   }
