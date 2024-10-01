@@ -176,7 +176,13 @@ class CronCommand extends AcquiaCommand {
     $frequency = "$cronMinute $cronHour $cronDayMonth $cronMonth $cronDayWeek";
     $makeItSo = $this->confirm("Create the cron job with the label '$cronLabel'.\nCommand of '$cronCommand'.\nWith the frequency of '$frequency'?", "Y");
     if ($makeItSo) {
-      $this->createCron($envUuId, $cronCommand, $frequency, $cronLabel);
+      $cronCreateResponse = $this->createCron($envUuId, $cronCommand, $frequency, $cronLabel);
+      if (is_null($cronCreateResponse->links)) {
+        $this->say("Failed to create cron, one probably already exists with the label $cronLabel.");
+      }
+      else {
+        $this->say($cronCreateResponse->message);
+      }
     }
     else {
       $this->say("Aborting.");
