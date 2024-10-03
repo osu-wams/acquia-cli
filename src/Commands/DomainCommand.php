@@ -196,22 +196,24 @@ class DomainCommand extends AcquiaCommand {
       $stageDomain = $this->doAsk($stageDomainQuestion);
     }
 
-    $makeItSo = $this->confirm("Do you want to create the Development:$devDomain and Staging:$stageDomain for $domainName?");
+    $makeItSo = $this->confirm("Do you want to create the Development:$devDomain and Staging:$stageDomain for $domainName?", TRUE);
     if ($makeItSo) {
       try {
-        $devEnvUuId = $this->getUuidFromName("dev");
+        $devEnvUuId = $this->getEnvUuIdFromApp($appUuId, 'dev');
       }
       catch (Exception $exception) {
         $this->say($exception->getMessage());
       }
       try {
-        $stageEnvUuId = $this->getUuidFromName("test");
+        $stageEnvUuId = $this->getEnvUuIdFromApp($appUuId, 'test');
       }
       catch (Exception $exception) {
         $this->say($exception->getMessage());
       }
       $this->createDomain($devEnvUuId, $devDomain);
+      $this->say("Created Development:$devDomain");
       $this->createDomain($stageEnvUuId, $stageDomain);
+      $this->say("Created Staging:$stageDomain");
     }
     else {
       $this->say("Aborting");
