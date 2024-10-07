@@ -174,8 +174,7 @@ class DomainCommand extends AcquiaCommand {
       $this->say('Incorrect Application ID.');
     }
     if (is_null($options['domain'])) {
-      $domainQuestion = new Question("What is the Production domain you want to use to create the Development and Staging domains?");
-      $domainName = $this->doAsk($domainQuestion);
+      $domainName = $this->ask("What is the Production domain you want to use to create the Development and Staging domains?");
     }
     else {
       $domainName = $options['domain'];
@@ -190,10 +189,8 @@ class DomainCommand extends AcquiaCommand {
       $stageDomain = $domainShort . '.stage.acquia.cws.oregonstate.edu';
     }
     else {
-      $devDomainQuestion = new Question("What is your Development domain?");
-      $devDomain = $this->doAsk($devDomainQuestion);
-      $stageDomainQuestion = new Question("What is your Staging domain?");
-      $stageDomain = $this->doAsk($stageDomainQuestion);
+      $devDomain = $this->ask("What is your Development domain?");
+      $stageDomain = $this->ask("What is your Staging domain?");
     }
 
     $makeItSo = $this->confirm("Do you want to create the Development:$devDomain and Staging:$stageDomain for $domainName?", TRUE);
