@@ -44,8 +44,8 @@ class CopyFilesCommand extends AcquiaCommand {
     $to = explode('@', $toUrl);
     $platform = $env->get($envUuIdFrom)->platform;
     if ($platform === 'cloud-next') {
-      $remotePathFrom = "/shared/sites/${from[0]}/sites/$site/";
-      $remotePathTo = "/shared/sites/${to[0]}/sites/$site/";
+      $remotePathFrom = "/shared/sites/$site/";
+      $remotePathTo = "/shared/sites/$site/";
     }
     else {
       $remotePathFrom = "/mnt/gfs/${from[0]}/sites/$site/";
@@ -104,7 +104,7 @@ class CopyFilesCommand extends AcquiaCommand {
     $from = explode('@', $fromUrl);
     $platform = $env->get($envUuIdFrom)->platform;
     if ($platform === 'cloud-next') {
-      $remotePath = "/shared/sites/${from[0]}/sites/$site/";
+      $remotePath = "/shared/sites/$site/";
     }
     else {
       $remotePath = "/mnt/gfs/${from[0]}/sites/$site/";
