@@ -173,14 +173,16 @@ class DbCommand extends AcquiaCommand {
       $dbName = $options['dbname'];
     }
     if (!is_null($dbName)) {
-      if (count($dbName) > 1) {
-        $makeItSo = $this->confirm("Do you want to delete these databases: " . implode(', ', $dbName) . "?");
+      $dbNameArr = explode(',', $dbName);
+      $dbCreateList = array_map(fn($db) => str_replace('.', '_', strtolower(trim($db))), $dbNameArr);
+      if (count($dbCreateList) > 1) {
+        $makeItSo = $this->confirm("Do you want to delete these databases: " . implode(', ', $dbCreateList) . "?");
       }
       else {
-        $makeItSo = $this->confirm("Do you want to delete this database: " . $dbName[0] . "?");
+        $makeItSo = $this->confirm("Do you want to delete this database: " . $dbCreateList[0] . "?");
       }
       if ($makeItSo) {
-        foreach ($dbName as $db) {
+        foreach ($dbCreateList as $db) {
           $this->deleteDatabase($appUuId, $db);
         }
       }
