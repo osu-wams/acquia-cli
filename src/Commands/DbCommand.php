@@ -96,28 +96,45 @@ class DbCommand extends AcquiaCommand {
    * Create a new Database.
    *
    * @command db:create
-   *
+   * @usage db:create
+   * @usage db:create --app prod:app
+   * @usage db:create --domain test.com
+   * @usage db:create --app prod:app --domain test.com,test2.com
    * @throws \Exception
    */
-  public function createDb() {
-    $this->say('Getting Applications...');
-    $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to operate on', $this->getApplicationsId());
-    $appName = $this->doAsk($appHelper);
-    // Attempt to get the UUID of this application.
+  public function createDb(array $options = [
+    'app' => NULL,
+    'domain' => NULL,
+  ]
+  ) {
+    $appName = $this->getAppName($options);
     try {
       $appUuId = $this->getUuidFromName($appName);
     }
     catch (Exception $e) {
       $this->say('Incorrect Application ID.');
     }
-    $dbNameHelper = new Question('Production domain name: ');
-    $dbName = $this->doAsk($dbNameHelper);
+    if (is_null($options['domain'])) {
+      $dbNameHelper = new Question('What is the production domain name (Enter multiple domains separated by a comma): ');
+      $dbName = $this->doAsk($dbNameHelper);
+    }
+    else {
+      $dbName = $options['domain'];
+    }
     if (!is_null($dbName)) {
-      $this->say('Creating database > ' . $dbName);
-      $dbName = str_replace('.', '_', strtolower($dbName));
-      $makeItSo = $this->confirm("Do want to create database: ${dbName}?");
+      $dbNameArr = explode(',', $dbName);
+      $dbCreateList = array_map(fn($db) => str_replace('.', '_', strtolower(trim($db))), $dbNameArr);
+      if (count($dbCreateList) > 1) {
+        $makeItSo = $this->confirm("Do you want to create these databases: " . implode(', ', $dbCreateList) . "?");
+      }
+      else {
+        $makeItSo = $this->confirm("Do you want to create this database: " . $dbCreateList[0] . "?");
+      }
       if ($makeItSo) {
-        $this->createDatabase($appUuId, $dbName);
+        foreach ($dbCreateList as $db) {
+          $this->say('Creating database > ' . $db);
+          $this->createDatabase($appUuId, $db);
+        }
       }
     }
     else {
@@ -130,25 +147,42 @@ class DbCommand extends AcquiaCommand {
    * Delete a database.
    *
    * @command db:delete
+   * @usage db:delete --app prod:app
+   * @usage db:delete --dbname test.com
+   * @usage db:delete --app prod:app --dbname test.com,test2.com
    */
-  public function deleteDb() {
-    $this->say('Getting Applications...');
-    $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to operate on', $this->getApplicationsId());
-    $appName = $this->doAsk($appHelper);
-    // Attempt to get the UUID of this application.
+  public function deleteDb(array $options = [
+    'app' => NULL,
+    'dbname' => NULL,
+  ]
+  ) {
+    $appName = $this->getAppName($options);
     try {
       $appUuId = $this->getUuidFromName($appName);
     }
     catch (Exception $e) {
       $this->say('Incorrect Application ID.');
     }
-    $this->say('Getting Databases...');
-    $dbHelper = new ChoiceQuestion('Select which Database to delete', $this->getDatabases($appUuId));
-    $dbName = $this->doAsk($dbHelper);
+    if (is_null($options['dbname'])) {
+      $this->say('Getting Databases...');
+      $dbHelper = new ChoiceQuestion('Select which Database to delete', $this->getDatabases($appUuId));
+      $dbHelper->setMultiselect(TRUE);
+      $dbName = $this->doAsk($dbHelper);
+    }
+    else {
+      $dbName = $options['dbname'];
+    }
     if (!is_null($dbName)) {
-      $makeItSo = $this->confirm("Do you want to delete this database: {$dbName}?");
+      if (count($dbName) > 1) {
+        $makeItSo = $this->confirm("Do you want to delete these databases: " . implode(', ', $dbName) . "?");
+      }
+      else {
+        $makeItSo = $this->confirm("Do you want to delete this database: " . $dbName[0] . "?");
+      }
       if ($makeItSo) {
-        $this->deleteDatabase($appUuId, $dbName);
+        foreach ($dbName as $db) {
+          $this->deleteDatabase($appUuId, $db);
+        }
       }
     }
   }
