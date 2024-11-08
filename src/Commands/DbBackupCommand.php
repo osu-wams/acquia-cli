@@ -80,7 +80,7 @@ class DbBackupCommand extends AcquiaCommand {
    *
    * @return string The name of the application.
    */
-  private function getAppName(array $options): string {
+  protected function getAppName(array $options): string {
     if (is_null($options['app'])) {
       $this->say('Getting Applications...');
       $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to operate on', $this->getApplicationsId());
@@ -100,7 +100,7 @@ class DbBackupCommand extends AcquiaCommand {
    *
    * @return string The name of the environment.
    */
-  private function getEnvName(array $options, string $appUuId) {
+  protected function getEnvName(array $options, string $appUuId) {
     if (is_null($options['env'])) {
       // Get a list of environments for this App UUID.
       $this->writeln('Getting Environment IDs...');

@@ -80,7 +80,7 @@ class DomainCommand extends AcquiaCommand {
    *
    * @return string The name of the application.
    */
-  private function getAppName(array $options): string {
+  protected function getAppName(array $options): string {
     if (is_null($options['app'])) {
       $this->say('Getting Applications...');
       $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to operate on', $this->getApplicationsId());
@@ -100,7 +100,7 @@ class DomainCommand extends AcquiaCommand {
    *
    * @return string The name of the environment.
    */
-  private function getEnvName(array $options, string $appUuId) {
+  protected function getEnvName(array $options, string $appUuId) {
     if (is_null($options['env'])) {
       // Get a list of environments for this App UUID.
       $this->writeln('Getting Environment IDs...');
@@ -148,7 +148,18 @@ class DomainCommand extends AcquiaCommand {
       $domainName = $this->doAsk($domainQuestion);
     }
     else {
-      $domainName = $options['domain'];
+      // Create an array from a comma seperated string.
+      $domainList = explode(",", $options['domain']);
+      // Removing any whitespace.
+      $domainName = array_map(fn($domain) => trim($domain), $domainList);
+    }
+    if (!is_null($domainName)) {
+      if (count($domainName) > 1) {
+        $makeItSo = $this->confirm("Do you want to create these domains: " . implode(",", $domainName) . "?");
+      }
+      else {
+        $makeItSo = $this->confirm("Do you want to create this domain: " . $domainName . "?");
+      }
     }
     $this->createDomain($envUuId, $domainName);
   }

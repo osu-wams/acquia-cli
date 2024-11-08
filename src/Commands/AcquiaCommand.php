@@ -18,6 +18,7 @@ use Exception;
 use Robo\Robo;
 use Robo\Tasks;
 use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 
 /**
  * This is project's console commands configuration for Robo task runner.
@@ -96,22 +97,6 @@ abstract class AcquiaCommand extends Tasks {
   }
 
   /**
-   * Get a list of Application Names
-   *
-   * @return array
-   *  Returns an array of all applications the user has access too.
-   */
-  protected function getApplicationsId() {
-    $application = new Applications($this->client);
-    $apps = $application->getAll();
-    $appList = [];
-    foreach ($apps as $app) {
-      $appList[] = $app->hosting->id;
-    }
-    return $appList;
-  }
-
-  /**
    * Get all applications the user has access to.
    *
    * @return \AcquiaCloudApi\Response\ApplicationsResponse
@@ -119,24 +104,6 @@ abstract class AcquiaCommand extends Tasks {
   protected function getAllApplications() {
     $applications = new Applications($this->client);
     return $applications->getAll();
-  }
-
-  /**
-   * Get a list of environments for this App.
-   *
-   * @param string $appUuId
-   *  The Acquia Cloud App UUID.
-   *
-   * @return array
-   *  Return an array of environments for this application.
-   */
-  protected function getEnvironments($appUuId) {
-    $envList = [];
-    $environments = new Environments($this->client);
-    foreach ($environments->getAll($appUuId) as $environment) {
-      $envList[] = $environment->name;
-    }
-    return $envList;
   }
 
   /**
@@ -474,6 +441,81 @@ abstract class AcquiaCommand extends Tasks {
   protected function copyFiles(string $envUuIdFrom, string $envUuIdTo) {
     $fileService = new Environments($this->client);
     return $fileService->copyFiles($envUuIdFrom, $envUuIdTo);
+  }
+
+  /**
+   * Retrieves the application name from the provided options or prompts the
+   * user to select one.
+   *
+   * @param array $options An associative array of options including the key
+   *   'app' for the application name.
+   *
+   * @return string The name of the application.
+   */
+  protected function getAppName(array $options): string {
+    if (is_null($options['app'])) {
+      $this->say('Getting Applications...');
+      $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to operate on', $this->getApplicationsId());
+      return $this->doAsk($appHelper);
+    }
+    return $options['app'];
+  }
+
+  /**
+   * Get a list of Application Names
+   *
+   * @return array
+   *  Returns an array of all applications the user has access to.
+   */
+  protected function getApplicationsId() {
+    $application = new Applications($this->client);
+    $apps = $application->getAll();
+    $appList = [];
+    foreach ($apps as $app) {
+      $appList[] = $app->hosting->id;
+    }
+    return $appList;
+  }
+
+  /**
+   * Retrieves the environment name from the provided options or prompts the
+   * user to select one based on the given application UUID.
+   *
+   * @param array $options An associative array of options including the key
+   *   'env' for the environment name.
+   * @param string $appUuId The UUID of the application for which to retrieve
+   *   the environments.
+   *
+   * @return string The name of the environment.
+   */
+  protected function getEnvName(array $options, string $appUuId) {
+    if (is_null($options['env'])) {
+      // Get a list of environments for this App UUID.
+      $this->writeln('Getting Environment IDs...');
+      $envList = $this->getEnvironments($appUuId);
+      // Get the Env for the scheduled jobs.
+      $envHelper = new ChoiceQuestion('Which Environment do you want...', $envList);
+      return $this->doAsk($envHelper);
+    }
+    return $options['env'];
+  }
+
+  /**
+   * Get a list of environments for this App.
+   *
+   * @param string $appUuId
+   *  The Acquia Cloud App UUID.
+   *
+   * @return array
+   *  Return an array of environments for this application.
+   */
+  protected function getEnvironments($appUuId) {
+    $envList = [];
+    $environments = new Environments($this->client);
+    foreach ($environments->getAll($appUuId) as $environment) {
+      $envList[] = $environment->name;
+    }
+    return $envList;
   }
 
 }
