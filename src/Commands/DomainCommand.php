@@ -144,8 +144,10 @@ class DomainCommand extends AcquiaCommand {
       $this->say('Incorrect Environment and Application id.');
     }
     if (is_null($options['domain'])) {
-      $domainQuestion = new Question("What domain do you want to create in $appName application and $environment?");
+      $domainQuestion = new Question("What domain do you want to create in $appName application and $environment? Enter multiple domains separated by comma.");
       $domainName = $this->doAsk($domainQuestion);
+      $domainName = explode(',', $domainName);
+      $domainName = array_map(fn($domain) => trim($domain), $domainName);
     }
     else {
       // Create an array from a comma seperated string.
@@ -153,15 +155,22 @@ class DomainCommand extends AcquiaCommand {
       // Removing any whitespace.
       $domainName = array_map(fn($domain) => trim($domain), $domainList);
     }
-    if (!is_null($domainName)) {
+    if (!empty($domainName)) {
       if (count($domainName) > 1) {
         $makeItSo = $this->confirm("Do you want to create these domains: " . implode(",", $domainName) . "?");
       }
       else {
-        $makeItSo = $this->confirm("Do you want to create this domain: " . $domainName . "?");
+        $makeItSo = $this->confirm("Do you want to create this domain: " . $domainName[0] . "?");
+      }
+      if ($makeItSo) {
+        foreach ($domainName as $domain) {
+          $this->createDomain($envUuId, $domain);
+        }
+      }
+      else {
+        $this->say("Aborting");
       }
     }
-    $this->createDomain($envUuId, $domainName);
   }
 
   /**
