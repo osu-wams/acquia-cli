@@ -162,14 +162,12 @@ class CronCommand extends AcquiaCommand {
       $domain = $options['domain'];
     }
     $site = explode(":", $appName)[1];
-    $randomHour = random_int(0, 23);
-    $randomMinute = random_int(0, 59);
     $defaultLabel = "Cron - $domain";
     $defaultCommand = "/usr/local/bin/cron-wrapper.sh $site.$environment https://$domain";
     $cronLabel = $this->askDefault("Enter the cron label:", $defaultLabel);
     $cronCommand = $this->askDefault("Enter the cron command.", $defaultCommand);
-    $cronMinute = $this->askDefault("Enter the cron minute: (0-59)", $randomMinute);
-    $cronHour = $this->askDefault("Enter the cron hour: (0-23)", $randomHour);
+    $cronMinute = $this->askDefault("Enter the cron minute: (0-59)", '0');
+    $cronHour = $this->askDefault("Enter the cron hour: (0-23)", '*/4');
     $cronDayMonth = $this->askDefault('Enter the cron day of month: (1-31)', '*');
     $cronMonth = $this->askDefault('Enter the cron month: (1-12)', '*');
     $cronDayWeek = $this->askDefault('Enter the cron day of week: (0-6)', '*');
