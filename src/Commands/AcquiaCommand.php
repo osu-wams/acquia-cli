@@ -518,4 +518,20 @@ abstract class AcquiaCommand extends Tasks {
     return $envList;
   }
 
+  /**
+   * Deletes a Cron job associated with the given environment UUID and Cron ID.
+   *
+   * @param string $envUuid
+   *  The UUID of the environment where the Cron job is located.
+   * @param string $cronId
+   *  The ID of the Cron job to be deleted.
+   *
+   * @return mixed
+   *  Returns the response from the delete operation.
+   */
+  protected function deleteCron(string $envUuid, string $cronId) {
+    $cron = new Crons($this->client);
+    return $cron->delete($envUuid, $cronId);
+  }
+
 }

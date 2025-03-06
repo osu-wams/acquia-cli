@@ -97,6 +97,74 @@ class CronCommand extends AcquiaCommand {
   }
 
   /**
+   * Deletes scheduled cron jobs for the specified application and environment.
+   *
+   * @param array $options
+   * @option $app The Acquia Cloud Application name: prod:shortname
+   * @option $env The Environment short name: dev|prod|test
+   * @option $format Format the result data. Available formats:
+   *    csv,json,list,null,php,print-r,sections,string,table,tsv,var_dump,var_export,xml,yaml
+   *
+   * @command cron:delete
+   *
+   * @return void
+   *   This method does not return a value but performs deletion operations
+   *   based on user input or provided options.
+   */
+  public function deleteCrons(array $options = [
+    'app' => NULL,
+    'env' => NULL,
+    'format' => 'table',
+    'fields' => 'label,command',
+  ]
+  ) {
+    if (is_null($options['app'])) {
+      $this->say('Getting Applications...');
+      $appHelper = new ChoiceQuestion('Select which Acquia Cloud Application you want to operate on', $this->getApplicationsId());
+      $appName = $this->doAsk($appHelper);
+    }
+    else {
+      $appName = $options['app'];
+    }
+    // Attempt to get the UUID of this application.
+    try {
+      $appUuId = $this->getUuidFromName($appName);
+    }
+    catch (Exception $e) {
+      $this->say('Incorrect Application ID.');
+      exit($e->getCode());
+    }
+    if (is_null($options['env'])) {
+      // Get a list of environments for this App UUID.
+      $this->writeln('Getting Environment ID\'s...');
+      $envList = $this->getEnvironments($appUuId);
+      // Get the Env for the scheduled jobs.
+      $envHelper = new ChoiceQuestion('Which Environment do you want to create the cron for...', $envList);
+      $environment = $this->doAsk($envHelper);
+    }
+    else {
+      $environment = $options['env'];
+    }
+    try {
+      $envUuId = $this->getEnvUuIdFromApp($appUuId, $environment);
+    }
+    catch (Exception $e) {
+      $this->say('Incorrect Environment and Application id.');
+      exit($e->getCode());
+    }
+    if ($envUuId) {
+      $cronList = $this->getCrons($envUuId);
+      $simplifiedCronList = array_map(function($cron) {
+        return $cron['label'];
+      }, $cronList);
+      asort($simplifiedCronList);
+      $cronIdHelper = new ChoiceQuestion('Which Cron ID do you want to delete?', $simplifiedCronList);
+      $selectedCron = $this->doAsk($cronIdHelper);
+      $this->deleteCron($envUuId, $selectedCron);
+    }
+  }
+
+  /**
    * Create a new scheduled cron job.
    *
    * Optional arguments: app, env, domain.
