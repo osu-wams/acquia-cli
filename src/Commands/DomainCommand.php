@@ -301,6 +301,7 @@ class DomainCommand extends AcquiaCommand {
     'app' => NULL,
     'env' => NULL,
     'domain' => NULL,
+    'yes|y' => FALSE,
   ]
   ) {
     $appName = $this->getAppName($options);
@@ -331,11 +332,14 @@ class DomainCommand extends AcquiaCommand {
       $domainDeleteList = array_map(fn($domain) => trim($domain), $domainList);
     }
     if (!is_null($domainDeleteList)) {
-      if (count($domainDeleteList) > 1) {
-        $makeItSo = $this->confirm("Do you want to delete these domains: " . implode(",", $domainDeleteList) . "?");
-      }
-      else {
-        $makeItSo = $this->confirm("Do you want to delete this domain: " . $domainDeleteList[0] . "?");
+      $makeItSo = $options['yes'];
+      if (!$makeItSo) {
+        if (count($domainDeleteList) > 1) {
+          $makeItSo = $this->confirm("Do you want to delete these domains: " . implode(",", $domainDeleteList) . "?");
+        }
+        else {
+          $makeItSo = $this->confirm("Do you want to delete this domain: " . $domainDeleteList[0] . "?");
+        }
       }
       if ($makeItSo) {
         foreach ($domainDeleteList as $domainToDelete) {

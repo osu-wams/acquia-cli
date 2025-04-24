@@ -154,6 +154,7 @@ class DbCommand extends AcquiaCommand {
   public function deleteDb(array $options = [
     'app' => NULL,
     'dbname' => NULL,
+    'yes|y' => FALSE,
   ]
   ) {
     $appName = $this->getAppName($options);
@@ -174,11 +175,14 @@ class DbCommand extends AcquiaCommand {
     }
     if (!is_null($dbName)) {
       $dbCreateList = array_map(fn($db) => str_replace('.', '_', strtolower(trim($db))), $dbName);
-      if (count($dbCreateList) > 1) {
-        $makeItSo = $this->confirm("Do you want to delete these databases: " . implode(', ', $dbCreateList) . "?");
-      }
-      else {
-        $makeItSo = $this->confirm("Do you want to delete this database: " . $dbCreateList[0] . "?");
+      $makeItSo = $options['yes'];
+      if (!$makeItSo) {
+        if (count($dbCreateList) > 1) {
+          $makeItSo = $this->confirm("Do you want to delete these databases: " . implode(', ', $dbCreateList) . "?");
+        }
+        else {
+          $makeItSo = $this->confirm("Do you want to delete this database: " . $dbCreateList[0] . "?");
+        }
       }
       if ($makeItSo) {
         foreach ($dbCreateList as $db) {
