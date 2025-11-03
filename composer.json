@@ -4,6 +4,7 @@
   "minimum-stability": "stable",
   "license": "GPL-2.0-or-later",
   "type": "project",
+  "version": "2.0.0",
   "authors": [
     {
       "name": "Matthew Brabham",
@@ -24,24 +25,18 @@
     ]
   },
   "bin": "bin/acquiacli",
-  "config": {
-    "platform": {
-      "php": "7.4.33"
-    }
-  },
   "require": {
-    "php": "^7.4",
-    "consolidation/robo": "^4.0",
+    "consolidation/robo": "^5",
     "league/oauth2-client": "^2.4",
     "ext-json": "*",
-    "typhonius/acquia-php-sdk-v2": "^2.6",
+    "typhonius/acquia-php-sdk-v2": "^3",
     "consolidation/output-formatters": "^4.1",
-    "symfony/yaml": "^5.1"
+    "symfony/yaml": "^7"
   },
   "require-dev": {
-    "symfony/var-dumper": "^5.1",
-    "phpunit/phpunit": "^9.0",
-    "phpstan/phpstan": "^1.8",
-    "phpstan/phpstan-phpunit": "^1.1"
+    "symfony/var-dumper": "^7.3",
+    "phpunit/phpunit": "^9.6",
+    "phpstan/phpstan": "^2.1",
+    "phpstan/phpstan-phpunit": "^2.0"
   }
 }
