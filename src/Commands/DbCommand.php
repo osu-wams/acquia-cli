@@ -123,7 +123,7 @@ class DbCommand extends AcquiaCommand {
     }
     if (!is_null($dbName)) {
       $dbNameArr = explode(',', $dbName);
-      $dbCreateList = array_map(fn($db) => str_replace('.', '_', strtolower(trim($db))), $dbNameArr);
+      $dbCreateList = array_map(fn($db) => preg_replace('/\W+/', '_', strtolower(trim($db))), $dbNameArr);
       if (count($dbCreateList) > 1) {
         $makeItSo = $this->confirm("Do you want to create these databases: " . implode(', ', $dbCreateList) . "?");
       }
@@ -174,18 +174,18 @@ class DbCommand extends AcquiaCommand {
       $dbName = explode(',', $options['dbname']);
     }
     if (!is_null($dbName)) {
-      $dbCreateList = array_map(fn($db) => str_replace('.', '_', strtolower(trim($db))), $dbName);
+      $dbDeleteList = array_map(fn($db) => preg_replace('/\W+/', '_', strtolower(trim($db))), $dbName);
       $makeItSo = $options['yes'];
       if (!$makeItSo) {
-        if (count($dbCreateList) > 1) {
-          $makeItSo = $this->confirm("Do you want to delete these databases: " . implode(', ', $dbCreateList) . "?");
+        if (count($dbDeleteList) > 1) {
+          $makeItSo = $this->confirm("Do you want to delete these databases: " . implode(', ', $dbDeleteList) . "?");
         }
         else {
-          $makeItSo = $this->confirm("Do you want to delete this database: " . $dbCreateList[0] . "?");
+          $makeItSo = $this->confirm("Do you want to delete this database: " . $dbDeleteList[0] . "?");
         }
       }
       if ($makeItSo) {
-        foreach ($dbCreateList as $db) {
+        foreach ($dbDeleteList as $db) {
           $this->deleteDatabase($appUuId, $db);
         }
       }
